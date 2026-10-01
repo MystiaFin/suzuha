@@ -20,6 +20,9 @@ const SAMPLE: u32 = 160;
 // how often the chosen wallpaper is checked for a change
 const CHECK: Duration = Duration::from_millis(500);
 
+// how often a running wallpaper transition is checked for its end
+const SETTLE: Duration = Duration::from_millis(16);
+
 // the chosen wallpaper, read once per change for where the desktop cards fit
 #[derive(Default)]
 pub struct Placement {
@@ -49,6 +52,16 @@ impl Service for Placement {
 
             if path != placed && !locked {
                 let analysis = analyse(&path);
+
+                // the cards move once the new wallpaper has finished coming in
+                while Wallpaper::read().shown != path && Wallpaper::read().path == path {
+                    thread::sleep(SETTLE);
+                }
+
+                // another wallpaper was picked meanwhile, so this reading is already stale
+                if Wallpaper::read().path != path {
+                    continue;
+                }
 
                 let mut placement = Self::write();
 
