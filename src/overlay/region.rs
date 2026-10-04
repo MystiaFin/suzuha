@@ -32,6 +32,19 @@ impl Region {
         }
     }
 
+    // grown out to whole pixels, the only steps a window is placed and sized in
+    pub fn snapped(&self) -> Region {
+        let x = self.x.floor();
+        let y = self.y.floor();
+
+        Region {
+            x,
+            y,
+            width: self.right().ceil() - x,
+            height: self.bottom().ceil() - y,
+        }
+    }
+
     // the part inside other, empty when they don't touch
     pub fn within(&self, other: Region) -> Region {
         let x = self.x.max(other.x);

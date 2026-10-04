@@ -96,7 +96,8 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         reach = reach.join(panel.reach);
     }
 
-    let reach = reach.within(screen);
+    // a fraction cut off the window's corner would leave a sliver between a panel and its edge
+    let reach = reach.within(screen).snapped();
 
     let mut blobs = Vec::new();
     let mut areas = Vec::new();
