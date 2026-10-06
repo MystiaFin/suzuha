@@ -1,6 +1,6 @@
 use amane::Color;
 
-use super::{config_home, hex, write};
+use super::{hex, state_home, write};
 use crate::theme::{self, Theme};
 
 // the seeds for the colors the shell's theme has no name for
@@ -23,7 +23,7 @@ struct Colors {
 pub fn export(theme: &Theme) {
     let colors = colors(theme);
 
-    let folder = format!("{}/quickshell", config_home());
+    let folder = state_home();
 
     let kitty = format!("{folder}/terminal-colors-kitty.conf");
     let foot = format!("{folder}/terminal-colors-foot.ini");
@@ -144,7 +144,7 @@ fn foot_config(theme: &Theme, colors: &Colors) -> String {
 fn reload_kitty(path: &str) {
     let script = format!(
         "for pid in $(pgrep -f '^kitty( |$)'); do \
-         kitty @ --to unix:@quickshell-kitty-$pid set-colors --all --configured '{path}'; \
+         kitty @ --to unix:@amane-kitty-$pid set-colors --all --configured '{path}'; \
          done 2>/dev/null"
     );
 

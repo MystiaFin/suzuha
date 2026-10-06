@@ -11,8 +11,8 @@ const LIGHT: &str = "AmaneDynamicLight";
 const DARK: &str = "AmaneDynamicDark";
 
 // installed icon themes that match each mode, used when they are there
-const LIGHT_ICONS: &str = "QuickshellSidebarLight";
-const DARK_ICONS: &str = "QuickshellSidebarDark";
+const LIGHT_ICONS: &str = "AmaneSidebarLight";
+const DARK_ICONS: &str = "AmaneSidebarDark";
 
 const YELLOW: Color = Color::rgb(0xf9, 0xe2, 0xaf);
 

@@ -20,5 +20,5 @@ pub fn export(theme: &Theme) {
     ];
 
     let _ = fs::create_dir_all(&folder);
-    let _ = fs::write(format!("{folder}/quickshell"), text.join("\n") + "\n");
+    let _ = fs::write(format!("{folder}/amane"), text.join("\n") + "\n");
 }

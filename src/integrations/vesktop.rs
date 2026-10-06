@@ -6,8 +6,8 @@ use crate::theme::Theme;
 const TEMPLATE: &str = include_str!("vesktop.css");
 
 // the block this owns inside quick css, everything around it is kept
-const START: &str = "/* quickshell-theme:start */";
-const END: &str = "/* quickshell-theme:end */";
+const START: &str = "/* amane-theme:start */";
+const END: &str = "/* amane-theme:end */";
 
 // vencord's quick css; rewritten in place, since vesktop watches the file itself
 pub fn export(theme: &Theme) {

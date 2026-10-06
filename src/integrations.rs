@@ -117,6 +117,11 @@ pub fn config_home() -> String {
     env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| format!("{}/.config", home()))
 }
 
+// where the generated files go, next to the settings
+pub fn state_home() -> String {
+    format!("{}/.local/state/amane", home())
+}
+
 /*
  * written next to the file and renamed over it, so a program reading it
  * never sees half a file; a failed write only leaves the old colors

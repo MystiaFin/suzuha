@@ -3,7 +3,7 @@ use crate::theme::Theme;
 
 // a btop theme file, which btop.conf points at
 pub fn export(theme: &Theme) {
-    let path = format!("{}/btop/themes/quickshell.theme", config_home());
+    let path = format!("{}/btop/themes/amane.theme", config_home());
 
     let background = hex(theme.background);
     let surface = hex(theme.surface);

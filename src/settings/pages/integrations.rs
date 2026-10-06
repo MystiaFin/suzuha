@@ -39,13 +39,13 @@ const INTEGRATIONS: [(&str, &str, &str, &str); 7] = [
         "integration_btop",
         "btop",
         "Generated terminal monitor theme",
-        "This creates and overwrites ~/.config/btop/themes/quickshell.theme.",
+        "This creates and overwrites ~/.config/btop/themes/amane.theme.",
     ),
     (
         "integration_cava",
         "Cava",
         "Generated visualizer theme",
-        "This creates and overwrites ~/.config/cava/themes/quickshell.",
+        "This creates and overwrites ~/.config/cava/themes/amane.",
     ),
 ];
 

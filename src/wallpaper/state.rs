@@ -11,7 +11,7 @@ use crate::motion::{self, Glide};
 use crate::settings::Settings;
 
 // the wallpaper picker writes the chosen file here
-const SELECTION: &str = ".config/quickshell/wallpaper-selection";
+const SELECTION: &str = ".local/state/amane/wallpaper-selection";
 
 const PALETTE_SIZE: usize = 16;
 

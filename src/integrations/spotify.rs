@@ -5,7 +5,7 @@ use crate::theme::Theme;
 pub fn export(theme: &Theme) {
     let cache = std::env::var("XDG_CACHE_HOME").unwrap_or_else(|_| format!("{}/.cache", home()));
 
-    let path = format!("{cache}/quickshell-theme/spotify.css");
+    let path = format!("{cache}/amane/spotify.css");
 
     let scheme = if theme.light { "light" } else { "dark" };
 

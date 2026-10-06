@@ -1,9 +1,9 @@
-use super::{config_home, hex, write};
+use super::{hex, state_home, write};
 use crate::theme::Theme;
 
 // the status line and pane colors, sourced into every running tmux server
 pub fn export(theme: &Theme) {
-    let path = format!("{}/quickshell/tmux-colors.conf", config_home());
+    let path = format!("{}/tmux-colors.conf", state_home());
 
     let surface = hex(theme.surface);
     let hover = hex(theme.hover_surface);
