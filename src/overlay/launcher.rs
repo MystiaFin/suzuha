@@ -545,6 +545,12 @@ fn launch_selected() {
             crate::wallpaper::picker::ipc(&[String::from("show")]);
         }
 
+        Kind::Converter => {
+            overlay.launcher.hide();
+
+            crate::converter::open();
+        }
+
         Kind::TmuxCommand => search_tmux(&mut overlay),
 
         Kind::Tmux(session) => {

@@ -1,5 +1,6 @@
 mod bar;
 mod clock;
+mod converter;
 mod floating;
 mod fonts;
 mod integrations;
@@ -57,5 +58,6 @@ fn main() {
         .ipc("settings", settings::ipc)
         .ipc("lock", lock_screen::ipc)
         .ipc("wallpaper", wallpaper::picker::ipc)
+        .ipc("converter", converter::ipc)
         .run();
 }

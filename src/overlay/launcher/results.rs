@@ -19,6 +19,9 @@ pub enum Kind {
     // opens the wallpaper picker
     Wallpapers,
 
+    // opens the file converter
+    Converter,
+
     // switches the search to tmux sessions
     TmuxCommand,
 
@@ -101,6 +104,7 @@ fn commands(search: &str) -> Vec<Entry> {
         ("Color scheme", "\u{f03d8}", "command_colors", Kind::Colors),
         ("Tmux sessions", "\u{f018d}", "command_tmux", Kind::TmuxCommand),
         ("Wallpapers", "\u{f02e9}", "command_wallpapers", Kind::Wallpapers),
+        ("Converter", "\u{f04e1}", "command_converter", Kind::Converter),
     ];
 
     let settings = Settings::read();
