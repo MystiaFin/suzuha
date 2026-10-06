@@ -1,16 +1,21 @@
+mod compress;
+mod documents;
 mod formats;
 mod job;
 
 use std::path::PathBuf;
 
 use amane::{
-    Center, Color, Column, Key, Parent, Pointer, Rectangle, Row, ScrollArea, Service,
-    SpaceBetween, Start, Text, Weight, Widget, Window, children,
+    Center, Color, Column, Full, Key, Parent, Pointer, Rectangle, Row, ScrollArea, Service,
+    SpaceBetween, Stack, Start, Text, Weight, Widget, Window, children,
 };
 
+use compress::{LEVELS, Level, SPEEDS, Speed};
+use documents::{DOCUMENTS, Document, Kind};
 use formats::{FORMATS, Format, Group};
 
 use crate::fonts;
+use crate::motion;
 use crate::theme::{self, Theme};
 
 // what open_window and close_window know this window by
@@ -21,9 +26,46 @@ const HEIGHT: f32 = 600.0;
 
 const MARGIN: f32 = 22.0;
 
+const TABS_HEIGHT: f32 = 48.0;
+const CONTROL_HEIGHT: f32 = 34.0;
+const CONTROL_GAP: f32 = 12.0;
+const GAP: f32 = 16.0;
+
 const CONVERTER_ICON: &str = "󰓡";
+const COMPRESS_ICON: &str = "󰛀";
+const DOCUMENTS_ICON: &str = "󰈙";
 const DROP_ICON: &str = "󰉍";
 const CLOSE_ICON: &str = "󰅖";
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum Page {
+    Convert,
+    Compress,
+    Documents,
+}
+
+const TABS: [(Page, &str, &str); 3] = [
+    (Page::Convert, CONVERTER_ICON, "Convert"),
+    (Page::Compress, COMPRESS_ICON, "Compress"),
+    (Page::Documents, DOCUMENTS_ICON, "Documents"),
+];
+
+// what the job thread does to every waiting file, fixed when it starts
+#[derive(Clone, Copy)]
+pub enum Task {
+    Convert(&'static Format),
+    Compress(Level, Speed),
+    Document(&'static Document),
+}
+
+struct Words {
+    action: &'static str,
+    working: &'static str,
+    finished: &'static str,
+}
+
+const CONVERT_WORDS: Words = Words { action: "Convert", working: "Converting", finished: "converted" };
+const COMPRESS_WORDS: Words = Words { action: "Compress", working: "Compressing", finished: "compressed" };
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Status {
@@ -41,7 +83,14 @@ pub struct File {
 pub struct Queue {
     files: Vec<File>,
 
+    page: Page,
+
     format: &'static Format,
+    level: Level,
+    speed: Speed,
+    document: &'static Document,
+
+    task: Task,
 
     // true while the job thread works through the waiting files
     running: bool,
@@ -53,7 +102,12 @@ impl Service for Queue {
     fn new() -> Self {
         Self {
             files: Vec::new(),
+            page: Page::Convert,
             format: &FORMATS[0],
+            level: Level::Medium,
+            speed: Speed::Medium,
+            document: &DOCUMENTS[0],
+            task: Task::Convert(&FORMATS[0]),
             running: false,
             hovered: None,
         }
@@ -97,10 +151,16 @@ fn clear() {
     }
 }
 
-// files that are done or failed go back in line for the new format
-fn convert() {
+// files that are done or failed go back in line for what the open page sets up
+fn start() {
     {
         let mut queue = Queue::write();
+
+        queue.task = match queue.page {
+            Page::Convert => Task::Convert(queue.format),
+            Page::Compress => Task::Compress(queue.level, queue.speed),
+            Page::Documents => Task::Document(queue.document),
+        };
 
         for file in &mut queue.files {
             if matches!(file.status, Status::Done | Status::Failed) {
@@ -142,18 +202,44 @@ pub fn view() -> Window {
 
     let inner_width = width - MARGIN * 2.0;
 
-    // what is left once the header, formats and footer have their room
-    let drop_height = (height - MARGIN * 2.0 - 40.0 - 3.0 * 34.0 - 40.0 - 16.0 * 6.0).max(120.0);
+    let page = Queue::read().page;
+
+    let controls = match page {
+        Page::Convert => Column::new(children![
+            format_row(&theme, Group::Image, "Image"),
+            format_row(&theme, Group::Video, "Video"),
+            format_row(&theme, Group::Audio, "Audio"),
+        ]),
+
+        Page::Compress => Column::new(children![level_row(&theme), speed_row(&theme)]),
+
+        Page::Documents => Column::new(children![
+            document_row(&theme, Kind::Text, "Text"),
+            document_row(&theme, Kind::Sheet, "Sheet"),
+            document_row(&theme, Kind::Slides, "Slides"),
+        ]),
+    };
+
+    let control_rows = match page {
+        Page::Convert | Page::Documents => 3.0,
+        Page::Compress => 2.0,
+    };
+
+    let controls_height = control_rows * CONTROL_HEIGHT + (control_rows - 1.0) * CONTROL_GAP;
+
+    // what is left once the header, tabs, controls and footer have their room
+    let taken = MARGIN * 2.0 + 40.0 + TABS_HEIGHT + controls_height + 40.0 + GAP * 4.0;
+
+    let drop_height = (height - taken).max(120.0);
 
     let content = Column::new(children![
         header(&theme, inner_width),
+        tabs(&theme, inner_width),
         drop_zone(&theme, inner_width, drop_height),
-        format_row(&theme, Group::Image, "Image"),
-        format_row(&theme, Group::Video, "Video"),
-        format_row(&theme, Group::Audio, "Audio"),
+        controls.gap(CONTROL_GAP),
         footer(&theme, inner_width),
     ])
-    .gap(16.0);
+    .gap(GAP);
 
     let frame = Rectangle::new()
         .width(Parent)
@@ -208,6 +294,76 @@ fn header(theme: &Theme, width: f32) -> Row {
         .align(Center)
 }
 
+// a pill that slides under the open page's label
+fn tabs(theme: &Theme, width: f32) -> Stack {
+    let open = Queue::read().page;
+
+    let tab_width = (width - 8.0) / TABS.len() as f32;
+    let tab_height = TABS_HEIGHT - 8.0;
+
+    let mut open_index = 0;
+    let mut labels: Vec<Box<dyn Widget>> = Vec::new();
+
+    for (index, (page, icon, label)) in TABS.into_iter().enumerate() {
+        let selected = page == open;
+
+        if selected {
+            open_index = index;
+        }
+
+        let hover_name = format!("tab:{label}");
+
+        let amount = motion::fade(&format!("converter-{hover_name}"), if selected { 1.0 } else { 0.0 });
+
+        let color = theme::mix(theme.secondary_text, theme.on_accent, amount);
+
+        let fill = if !selected && hovered(&hover_name) {
+            theme.hover_surface
+        } else {
+            Color::TRANSPARENT
+        };
+
+        let content = Row::new(children![
+            Text::new(icon).size(16.0).font(fonts::NERD).tight().color(color),
+            Text::new(label).size(14.0).font(fonts::BODY).weight(Weight::SemiBold).color(color),
+        ])
+        .gap(8.0)
+        .align(Center);
+
+        labels.push(Box::new(
+            Rectangle::new()
+                .width(tab_width)
+                .height(tab_height)
+                .radius(Full)
+                .fill(fill)
+                .cursor(Pointer)
+                .on_hover(move |inside| hover(hover_name.clone(), inside))
+                .on_click(move |_| Queue::write().page = page)
+                .align_child(Center, Center)
+                .child(content),
+        ));
+    }
+
+    let x = motion::follow("converter-tab", open_index as f32 * tab_width, motion::DEFAULT_SPATIAL);
+
+    let track = Rectangle::new().width(width).height(TABS_HEIGHT).radius(Full).fill(theme.surface);
+
+    let indicator = Rectangle::new()
+        .width(tab_width)
+        .height(tab_height)
+        .radius(Full)
+        .fill(theme.accent)
+        .translate(4.0 + x, 4.0);
+
+    let labels = Rectangle::new()
+        .width(width)
+        .height(TABS_HEIGHT)
+        .padding(4.0)
+        .child(Row::new(labels));
+
+    Stack::new(children![track, indicator, labels]).width(width).height(TABS_HEIGHT)
+}
+
 // takes files dropped from a file manager, and lists them once there are some
 fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
     let queue = Queue::read();
@@ -215,7 +371,7 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
     let zone = Rectangle::new()
         .width(width)
         .height(height)
-        .radius(16.0)
+        .radius(28.0)
         .fill(theme.surface)
         .border(1.0, theme.border)
         .on_drop(add);
@@ -235,8 +391,10 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
 
     let mut rows: Vec<Box<dyn Widget>> = Vec::new();
 
+    let working = words(queue.task).working;
+
     for file in &queue.files {
-        rows.push(Box::new(file_row(theme, file, row_width)));
+        rows.push(Box::new(file_row(theme, file, working, row_width)));
     }
 
     let list = ScrollArea::new("converter_files", Column::new(rows).gap(4.0))
@@ -246,10 +404,10 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
     zone.padding(12.0).child(list)
 }
 
-fn file_row(theme: &Theme, file: &File, width: f32) -> Row {
+fn file_row(theme: &Theme, file: &File, working: &'static str, width: f32) -> Row {
     let (label, color) = match file.status {
         Status::Waiting => ("Waiting", theme.muted_text),
-        Status::Converting => ("Converting", theme.accent),
+        Status::Converting => (working, theme.accent),
         Status::Done => ("Done", theme.success),
         Status::Failed => ("Failed", theme.danger),
     };
@@ -280,47 +438,112 @@ fn format_row(theme: &Theme, group: Group, label: &str) -> Row {
             continue;
         }
 
-        chips.push(Box::new(chip(theme, format, format.extension == chosen)));
+        let name = format!("format:{}", format.extension);
+
+        let selected = format.extension == chosen;
+
+        chips.push(Box::new(toggle(theme, name, &format.extension.to_uppercase(), selected, move || {
+            Queue::write().format = format
+        })));
     }
 
+    option_row(theme, label, chips)
+}
+
+fn document_row(theme: &Theme, kind: Kind, label: &str) -> Row {
+    let chosen = Queue::read().document.extension;
+
+    let mut chips: Vec<Box<dyn Widget>> = Vec::new();
+
+    for document in DOCUMENTS {
+        if document.kind != kind {
+            continue;
+        }
+
+        let name = format!("document:{}", document.extension);
+
+        let selected = document.extension == chosen;
+
+        chips.push(Box::new(toggle(theme, name, &document.extension.to_uppercase(), selected, move || {
+            Queue::write().document = document
+        })));
+    }
+
+    option_row(theme, label, chips)
+}
+
+fn level_row(theme: &Theme) -> Row {
+    let chosen = Queue::read().level;
+
+    let mut buttons: Vec<Box<dyn Widget>> = Vec::new();
+
+    for (level, label) in LEVELS {
+        let name = format!("level:{label}");
+
+        buttons.push(Box::new(toggle(theme, name, label, level == chosen, move || Queue::write().level = level)));
+    }
+
+    option_row(theme, "Strength", buttons)
+}
+
+fn speed_row(theme: &Theme) -> Row {
+    let chosen = Queue::read().speed;
+
+    let mut buttons: Vec<Box<dyn Widget>> = Vec::new();
+
+    for (speed, label) in SPEEDS {
+        let name = format!("speed:{label}");
+
+        buttons.push(Box::new(toggle(theme, name, label, speed == chosen, move || Queue::write().speed = speed)));
+    }
+
+    option_row(theme, "Speed", buttons)
+}
+
+fn option_row(theme: &Theme, label: &str, buttons: Vec<Box<dyn Widget>>) -> Row {
     let label = Rectangle::new()
         .width(64.0)
-        .height(34.0)
+        .height(CONTROL_HEIGHT)
         .align_child(Start, Center)
         .child(Text::new(label).size(12.0).font(fonts::BODY).color(theme.muted_text));
 
-    Row::new(children![label, Row::new(chips).gap(8.0)]).align(Center)
+    Row::new(children![label, Row::new(buttons).gap(8.0)]).align(Center)
 }
 
-fn chip(theme: &Theme, format: &'static Format, chosen: bool) -> Rectangle {
-    let hover_name = format!("format:{}", format.extension);
+// a rounded square that morphs into a filled pill once picked
+fn toggle(theme: &Theme, name: String, label: &str, selected: bool, on_click: impl Fn() + 'static) -> Rectangle {
+    let amount = motion::fade(&format!("converter-{name}"), if selected { 1.0 } else { 0.0 });
 
-    let (fill, text) = if chosen {
-        (theme.accent, theme.on_accent)
-    } else if hovered(&hover_name) {
-        (theme.hover_surface, theme.text)
+    let resting = if hovered(&name) {
+        theme.hover_surface
     } else {
-        (theme.surface, theme.secondary_text)
+        theme.surface
     };
 
-    let width = format.extension.len() as f32 * 9.0 + 28.0;
+    let fill = theme::mix(resting, theme.accent, amount);
+    let text = theme::mix(theme.secondary_text, theme.on_accent, amount);
+
+    let radius = 10.0 + (CONTROL_HEIGHT / 2.0 - 10.0) * amount;
+
+    let width = label.len() as f32 * 8.0 + 32.0;
 
     Rectangle::new()
         .width(width)
-        .height(34.0)
-        .radius(10.0)
+        .height(CONTROL_HEIGHT)
+        .radius(radius)
         .fill(fill)
         .cursor(Pointer)
-        .on_hover(move |inside| hover(hover_name.clone(), inside))
-        .on_click(move |_| Queue::write().format = format)
+        .on_hover(move |inside| hover(name.clone(), inside))
+        .on_click(move |_| on_click())
         .align_child(Center, Center)
-        .child(
-            Text::new(format.extension.to_uppercase())
-                .size(12.0)
-                .font(fonts::BODY)
-                .weight(Weight::SemiBold)
-                .color(text),
-        )
+        .child(Text::new(label).size(12.0).font(fonts::BODY).weight(Weight::SemiBold).color(text))
+}
+
+fn words(task: Task) -> Words {
+    match task {
+        Task::Convert(_) | Task::Document(_) => CONVERT_WORDS,
+        Task::Compress(..) => COMPRESS_WORDS,
+    }
 }
 
 // how far the list is, beside clear and convert
@@ -342,9 +565,19 @@ fn footer(theme: &Theme, width: f32) -> Row {
 
     let running = queue.running;
 
+    // a running job keeps its own words, the open page only says what comes next
+    let words = if running {
+        words(queue.task)
+    } else {
+        match queue.page {
+            Page::Convert | Page::Documents => CONVERT_WORDS,
+            Page::Compress => COMPRESS_WORDS,
+        }
+    };
+
     drop(queue);
 
-    let mut summary = format!("{finished} of {total} converted");
+    let mut summary = format!("{finished} of {total} {}", words.finished);
 
     if failed > 0 {
         summary.push_str(&format!(", {failed} failed"));
@@ -352,11 +585,11 @@ fn footer(theme: &Theme, width: f32) -> Row {
 
     let summary = Text::new(summary).size(12.0).font(fonts::BODY).color(theme.muted_text);
 
-    let convert_label = if running { "Converting" } else { "Convert" };
+    let start_label = if running { words.working } else { words.action };
 
     let buttons = Row::new(children![
         button(theme, "Clear", false, total > 0, clear),
-        button(theme, convert_label, true, total > 0 && !running, convert),
+        button(theme, start_label, true, total > 0 && !running, start),
     ])
     .gap(10.0);
 
@@ -385,7 +618,7 @@ fn button(theme: &Theme, label: &'static str, primary: bool, enabled: bool, on_c
     let button = Rectangle::new()
         .width(label.len() as f32 * 7.6 + 32.0)
         .height(40.0)
-        .radius(12.0)
+        .radius(Full)
         .fill(fill)
         .align_child(Center, Center)
         .child(Text::new(label).size(13.0).font(fonts::BODY).weight(Weight::SemiBold).color(text));
