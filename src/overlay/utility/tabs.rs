@@ -12,7 +12,9 @@ pub const HEIGHT: f32 = 38.0;
 const WIDTH: f32 = 44.0;
 const ACTIVE_WIDTH: f32 = 56.0;
 
-const RADIUS: f32 = 12.0;
+// a connected group: tabs sit close, with small corners where they meet
+const GAP: f32 = 2.0;
+const INNER_RADIUS: f32 = 6.0;
 
 struct Tab {
     page: Page,
@@ -41,19 +43,19 @@ const TABS: [Tab; 3] = [
 pub fn view(overlay: &Overlay, theme: &Theme, width: f32) -> Row {
     let mut tabs: Vec<Box<dyn Widget>> = Vec::new();
 
-    for tab in &TABS {
-        tabs.push(Box::new(button(overlay, theme, tab)));
+    for (index, tab) in TABS.iter().enumerate() {
+        tabs.push(Box::new(button(overlay, theme, tab, index)));
     }
 
     Row::new(tabs)
         .width(width)
         .height(HEIGHT)
-        .gap(8.0)
+        .gap(GAP)
         .justify(Center)
         .align(Center)
 }
 
-fn button(overlay: &Overlay, theme: &Theme, tab: &Tab) -> Rectangle {
+fn button(overlay: &Overlay, theme: &Theme, tab: &Tab, index: usize) -> Rectangle {
     let active = overlay.page == tab.page;
 
     let hover_name = format!("tab:{}", tab.name);
@@ -61,11 +63,15 @@ fn button(overlay: &Overlay, theme: &Theme, tab: &Tab) -> Rectangle {
     let (target_width, target_radius) = if active {
         (ACTIVE_WIDTH, HEIGHT / 2.0)
     } else {
-        (WIDTH, RADIUS)
+        (WIDTH, INNER_RADIUS)
     };
 
     let width = motion::follow(&format!("{hover_name}:width"), target_width, FAST_SPATIAL);
     let radius = motion::follow(&format!("{hover_name}:radius"), target_radius, FAST_SPATIAL);
+
+    // the group's two ends stay fully round
+    let left = if index == 0 { HEIGHT / 2.0 } else { radius };
+    let right = if index == TABS.len() - 1 { HEIGHT / 2.0 } else { radius };
 
     let fill = if active {
         theme.accent
@@ -82,7 +88,10 @@ fn button(overlay: &Overlay, theme: &Theme, tab: &Tab) -> Rectangle {
     Rectangle::new()
         .width(width)
         .height(HEIGHT)
-        .radius(radius)
+        .radius_top_left(left)
+        .radius_bottom_left(left)
+        .radius_top_right(right)
+        .radius_bottom_right(right)
         .fill(fill)
         .cursor(Pointer)
         .on_hover(move |inside| hover(hover_name.clone(), inside))
