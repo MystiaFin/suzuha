@@ -73,10 +73,7 @@ pub fn view(size: f32, progress: f32, running: bool, played: Color, track: Color
     Canvas::new().width(size).height(size).shapes(shapes)
 }
 
-/*
- * a sine around the circle, shifted along with the clock so it keeps
- * flowing; it swings less near its ends so they meet the circle
- */
+// a sine around the circle, shifted along with the clock so it keeps flowing
 fn wave(middle: f32, radius: f32, sweep: f32) -> Path {
     amane::request_frame();
 
@@ -87,15 +84,10 @@ fn wave(middle: f32, radius: f32, sweep: f32) -> Path {
 
     let shift = (millis % PERIOD_MS) as f32 / PERIOD_MS as f32 * TAU;
 
-    // degrees over which the swing grows from nothing at each end
-    let taper = 360.0 / WAVES;
-
     let point = |degrees: f32| {
         let angle = degrees.to_radians();
 
-        let room = degrees.min(sweep - degrees) / taper;
-
-        let swing = AMPLITUDE * room.min(1.0) * (angle * WAVES - shift).sin();
+        let swing = AMPLITUDE * (angle * WAVES - shift).sin();
 
         let distance = radius + swing;
 
