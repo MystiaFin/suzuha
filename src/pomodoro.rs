@@ -24,6 +24,11 @@ const MARGIN: f32 = 22.0;
 const GAP: f32 = 24.0;
 
 const CHIP_HEIGHT: f32 = 40.0;
+
+// connected mode buttons sit close, with small corners where they meet
+const CHIP_GAP: f32 = 2.0;
+const CHIP_INNER_RADIUS: f32 = 6.0;
+
 const PLAY_HEIGHT: f32 = 64.0;
 
 // a long break comes after this many focus rounds
@@ -281,8 +286,9 @@ fn header(theme: &Theme, width: f32) -> Row {
 }
 
 /*
- * a button group: the chosen mode turns into a pill and the rest
- * stay squarer; picking one starts it over, paused
+ * a connected button group: its two ends are fully round, the corners
+ * between buttons small, and the chosen mode turns into a pill; picking
+ * one starts it over, paused
  */
 fn mode_row(theme: &Theme) -> Row {
     let chosen = Timer::read().mode;
@@ -293,7 +299,7 @@ fn mode_row(theme: &Theme) -> Row {
         chips.push(Box::new(mode_chip(theme, index, mode, mode == chosen)));
     }
 
-    Row::new(chips).gap(4.0)
+    Row::new(chips).gap(CHIP_GAP)
 }
 
 fn mode_chip(theme: &Theme, index: usize, mode: Mode, chosen: bool) -> Rectangle {
@@ -309,12 +315,20 @@ fn mode_chip(theme: &Theme, index: usize, mode: Mode, chosen: bool) -> Rectangle
         (theme.surface, theme.secondary_text)
     };
 
-    let radius = if chosen { CHIP_HEIGHT / 2.0 } else { 10.0 };
+    let pill = CHIP_HEIGHT / 2.0;
+
+    let inner = morph(index, if chosen { pill } else { CHIP_INNER_RADIUS });
+
+    let left = if index == 0 { pill } else { inner };
+    let right = if index == MODES.len() - 1 { pill } else { inner };
 
     Rectangle::new()
         .width(label.len() as f32 * 8.0 + 36.0)
         .height(CHIP_HEIGHT)
-        .radius(morph(index, radius))
+        .radius_top_left(left)
+        .radius_bottom_left(left)
+        .radius_top_right(right)
+        .radius_bottom_right(right)
         .fill(fill)
         .cursor(Pointer)
         .on_hover(move |inside| hover(hover_name.clone(), inside))
