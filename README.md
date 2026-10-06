@@ -42,7 +42,7 @@ suzuha is my personal amane configuration: a full desktop shell in Rust rather t
 Clone the repository as your amane config:
 
 ```sh
-git clone https://github.com/MystiaFin/my-amane-shell.git ~/.config/amane
+git clone https://github.com/MystiaFin/suzuha.git ~/.config/amane
 ```
 
 Then launch it:
