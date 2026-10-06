@@ -26,7 +26,7 @@ suzuha is my personal amane configuration: a full desktop shell in Rust rather t
 - Liquid shader that lets the bar and panels flow into each other, with rounded screen corners
 - Application launcher with a `>` command mode and a tmux project picker
 - Control center with media controls and a cava visualizer
-- Utility panel with Wi-Fi, Bluetooth, brightness, calendar, and notifications
+- Utility panel with Wi-Fi, Bluetooth, brightness, calendar, notifications, and a screen recorder
 - Wallpaper picker with animated transitions and shuffle
 - Wallpaper-derived dynamic color palette, plus fixed Gruvbox and Catppuccin schemes
 - Floating desktop widgets that place themselves around the wallpaper
@@ -91,6 +91,8 @@ These are only needed for their corresponding features:
 | `dconf` | GTK theme switching |
 | `tmux` | Project launcher and generated tmux palette |
 | `xdg-desktop-portal` | Picking a profile picture |
+| `wf-recorder` | Screen recording |
+| `pactl` | Recording desktop sound and mic together |
 
 ## IPC
 
@@ -106,10 +108,11 @@ Mod+Shift+W { spawn "amane" "ipc" "call" "wallpaper" "toggle"; }
 
 ```sh
 amane ipc call launcher toggle     # also show, hide, showTmux
-amane ipc call utility toggle      # also show, hide
+amane ipc call utility toggle      # also show, hide, then a page: notifications, wifi, bluetooth, record
 amane ipc call control toggle      # also show, hide
 amane ipc call wallpaper toggle    # also show, hide
 amane ipc call settings
+amane ipc call record              # start or stop a screen recording
 amane ipc call converter
 amane ipc call lock
 ```

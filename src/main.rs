@@ -9,6 +9,7 @@ mod lock_screen;
 mod motion;
 mod overlay;
 mod pomodoro;
+mod recorder;
 mod profile;
 mod screen_mask;
 mod settings;
@@ -60,5 +61,6 @@ fn main() {
         .ipc("lock", lock_screen::ipc)
         .ipc("wallpaper", wallpaper::picker::ipc)
         .ipc("converter", converter::ipc)
+        .ipc("record", recorder::ipc)
         .run();
 }

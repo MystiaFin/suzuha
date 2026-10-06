@@ -1,11 +1,15 @@
+use std::cell::RefCell;
+
 use amane::{
-    Battery, Center, Color, End, Memory, Parent, Pointer, Rectangle, Row, Service, SpaceBetween,
-    Stack, Text, Widget, children,
+    Battery, Center, Color, End, Memory, Padding, Parent, Pointer, Rectangle, Row, Service,
+    SpaceBetween, Stack, Text, Widget, children,
 };
 
 use super::{pill, ring};
 use crate::fonts;
+use crate::motion::{self, Glide};
 use crate::overlay::Overlay;
+use crate::recorder;
 use crate::settings::Settings;
 use crate::theme::Theme;
 
@@ -22,6 +26,16 @@ const TRAY_PADDING: f32 = 10.0;
 
 // with the row's 10px gap this keeps 15px from the screen edge
 const EDGE: f32 = 5.0;
+
+const RECORDING_DOT: &str = "\u{f0765}";
+
+// milliseconds the tray takes to grow and shrink around the recording time
+const RECORDING_DURATION: u64 = 420;
+
+thread_local! {
+    // kept outside services, a service write from view() would draw frames forever
+    static RECORDING: RefCell<Option<(Glide, String)>> = const { RefCell::new(None) };
+}
 
 pub fn view(theme: &Theme, width: f32) -> Row {
     let settings = Settings::read();
@@ -137,7 +151,7 @@ fn memory(theme: &Theme) -> Row {
     indicator(usage, color, MEMORY_ICON, &text, theme)
 }
 
-// opens the utility center
+// opens the utility center, and grows to the left with the time while a recording runs
 fn tray(theme: &Theme) -> Rectangle {
     let mut icons: Vec<Box<dyn Widget>> = Vec::new();
 
@@ -153,9 +167,59 @@ fn tray(theme: &Theme) -> Rectangle {
         .justify(SpaceBetween)
         .align(Center);
 
-    pill::view(TRAY_WIDTH, theme.accent)
+    let (extra, recording) = recording(theme);
+
+    let content = Row::new(children![recording, row]).align(Center);
+
+    pill::view(TRAY_WIDTH + extra, theme.accent)
+        .clip()
         .cursor(Pointer)
         .on_click(|_| Overlay::toggle_utility())
-        .align_child(Center, Center)
-        .child(row)
+        .align_child(End, Center)
+        .padding(Padding {
+            top: 0.0,
+            right: TRAY_PADDING,
+            bottom: 0.0,
+            left: 0.0,
+        })
+        .child(content)
+}
+
+/*
+ * the dot and running time in front of the tray icons, and how much wider it makes the pill;
+ * the width glides, and the last time stays while it closes
+ */
+fn recording(theme: &Theme) -> (f32, Rectangle) {
+    let status = recorder::status();
+
+    RECORDING.with_borrow_mut(|shown| {
+        let (width, text) =
+            shown.get_or_insert_with(|| (motion::spatial(0.0, RECORDING_DURATION), String::new()));
+
+        if let Some(time) = status.as_ref() {
+            text.clone_from(time);
+        }
+
+        // 10px of padding, the dot, a 6px gap, the time, then 8px before the icons
+        let full = 10.0 + 8.0 + 6.0 + pill::text_width(text, 13.0) + 8.0;
+
+        width.to(if status.is_some() { full } else { 0.0 });
+
+        let extra = width.value();
+
+        let dot = Text::new(RECORDING_DOT).size(8.0).font(fonts::NERD).color(theme.on_accent);
+
+        let segment = Rectangle::new()
+            .width(extra)
+            .height(Parent)
+            .opacity(extra / full)
+            .align_child(Center, Center)
+            .child(
+                Row::new(children![dot, pill::label(text, 13.0, theme.on_accent)])
+                    .gap(6.0)
+                    .align(Center),
+            );
+
+        (extra, segment)
+    })
 }

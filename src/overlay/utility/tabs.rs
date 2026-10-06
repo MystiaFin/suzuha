@@ -22,7 +22,7 @@ struct Tab {
     icon: &'static str,
 }
 
-const TABS: [Tab; 3] = [
+const TABS: [Tab; 4] = [
     Tab {
         page: Page::Notifications,
         name: "notifications",
@@ -37,6 +37,11 @@ const TABS: [Tab; 3] = [
         page: Page::Bluetooth,
         name: "bluetooth",
         icon: "󰂯",
+    },
+    Tab {
+        page: Page::Record,
+        name: "record",
+        icon: "󰕧",
     },
 ];
 
