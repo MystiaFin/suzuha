@@ -45,11 +45,14 @@ Clone the repository as your amane config:
 git clone https://github.com/MystiaFin/suzuha.git ~/.config/amane
 ```
 
-Then launch it:
+Build the shell, then launch it:
 
 ```sh
+amane compile
 amane run
 ```
+
+`amane run` only starts the compiled shell, so run `amane compile` again after pulling changes. While editing the config, `amane dev` rebuilds and restarts it on every save.
 
 Or start it with Niri:
 
