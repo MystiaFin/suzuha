@@ -31,6 +31,10 @@ const MARGIN: f32 = 22.0;
 const TABS_HEIGHT: f32 = 48.0;
 const CONTROL_HEIGHT: f32 = 34.0;
 const CONTROL_GAP: f32 = 12.0;
+
+// connected toggles sit close, with small corners where they meet
+const TOGGLE_GAP: f32 = 2.0;
+const TOGGLE_INNER_RADIUS: f32 = 6.0;
 const GAP: f32 = 16.0;
 
 const PROGRESS_WIDTH: f32 = 64.0;
@@ -472,18 +476,18 @@ fn progress(theme: &Theme, progress: Option<f32>) -> Row {
 fn format_row(theme: &Theme, group: Group, label: &str) -> Row {
     let chosen = Queue::read().format.extension;
 
+    let formats: Vec<&'static Format> = FORMATS.iter().filter(|format| format.group == group).collect();
+
     let mut chips: Vec<Box<dyn Widget>> = Vec::new();
 
-    for format in FORMATS {
-        if format.group != group {
-            continue;
-        }
-
+    for (index, format) in formats.iter().copied().enumerate() {
         let name = format!("format:{}", format.extension);
 
         let selected = format.extension == chosen;
 
-        chips.push(Box::new(toggle(theme, name, &format.extension.to_uppercase(), selected, move || {
+        let ends = (index == 0, index == formats.len() - 1);
+
+        chips.push(Box::new(toggle(theme, name, &format.extension.to_uppercase(), selected, ends, move || {
             Queue::write().format = format
         })));
     }
@@ -494,18 +498,18 @@ fn format_row(theme: &Theme, group: Group, label: &str) -> Row {
 fn document_row(theme: &Theme, kind: Kind, label: &str) -> Row {
     let chosen = Queue::read().document.extension;
 
+    let documents: Vec<&'static Document> = DOCUMENTS.iter().filter(|document| document.kind == kind).collect();
+
     let mut chips: Vec<Box<dyn Widget>> = Vec::new();
 
-    for document in DOCUMENTS {
-        if document.kind != kind {
-            continue;
-        }
-
+    for (index, document) in documents.iter().copied().enumerate() {
         let name = format!("document:{}", document.extension);
 
         let selected = document.extension == chosen;
 
-        chips.push(Box::new(toggle(theme, name, &document.extension.to_uppercase(), selected, move || {
+        let ends = (index == 0, index == documents.len() - 1);
+
+        chips.push(Box::new(toggle(theme, name, &document.extension.to_uppercase(), selected, ends, move || {
             Queue::write().document = document
         })));
     }
@@ -518,10 +522,12 @@ fn level_row(theme: &Theme) -> Row {
 
     let mut buttons: Vec<Box<dyn Widget>> = Vec::new();
 
-    for (level, label) in LEVELS {
+    for (index, (level, label)) in LEVELS.into_iter().enumerate() {
         let name = format!("level:{label}");
 
-        buttons.push(Box::new(toggle(theme, name, label, level == chosen, move || Queue::write().level = level)));
+        let ends = (index == 0, index == LEVELS.len() - 1);
+
+        buttons.push(Box::new(toggle(theme, name, label, level == chosen, ends, move || Queue::write().level = level)));
     }
 
     option_row(theme, "Strength", buttons)
@@ -532,10 +538,12 @@ fn speed_row(theme: &Theme) -> Row {
 
     let mut buttons: Vec<Box<dyn Widget>> = Vec::new();
 
-    for (speed, label) in SPEEDS {
+    for (index, (speed, label)) in SPEEDS.into_iter().enumerate() {
         let name = format!("speed:{label}");
 
-        buttons.push(Box::new(toggle(theme, name, label, speed == chosen, move || Queue::write().speed = speed)));
+        let ends = (index == 0, index == SPEEDS.len() - 1);
+
+        buttons.push(Box::new(toggle(theme, name, label, speed == chosen, ends, move || Queue::write().speed = speed)));
     }
 
     option_row(theme, "Speed", buttons)
@@ -548,11 +556,21 @@ fn option_row(theme: &Theme, label: &str, buttons: Vec<Box<dyn Widget>>) -> Row 
         .align_child(Start, Center)
         .child(Text::new(label).size(12.0).font(fonts::BODY).color(theme.muted_text));
 
-    Row::new(children![label, Row::new(buttons).gap(8.0)]).align(Center)
+    Row::new(children![label, Row::new(buttons).gap(TOGGLE_GAP)]).align(Center)
 }
 
-// a rounded square that morphs into a filled pill once picked
-fn toggle(theme: &Theme, name: String, label: &str, selected: bool, on_click: impl Fn() + 'static) -> Rectangle {
+/*
+ * one of a connected group: the group's two ends are fully round, the
+ * corners between buttons small, and a picked one morphs into a filled pill
+ */
+fn toggle(
+    theme: &Theme,
+    name: String,
+    label: &str,
+    selected: bool,
+    (first, last): (bool, bool),
+    on_click: impl Fn() + 'static,
+) -> Rectangle {
     let amount = motion::fade(&format!("converter-{name}"), if selected { 1.0 } else { 0.0 });
 
     let resting = if hovered(&name) {
@@ -564,14 +582,20 @@ fn toggle(theme: &Theme, name: String, label: &str, selected: bool, on_click: im
     let fill = theme::mix(resting, theme.accent, amount);
     let text = theme::mix(theme.secondary_text, theme.on_accent, amount);
 
-    let radius = 10.0 + (CONTROL_HEIGHT / 2.0 - 10.0) * amount;
+    let inner = TOGGLE_INNER_RADIUS + (CONTROL_HEIGHT / 2.0 - TOGGLE_INNER_RADIUS) * amount;
+
+    let left = if first { CONTROL_HEIGHT / 2.0 } else { inner };
+    let right = if last { CONTROL_HEIGHT / 2.0 } else { inner };
 
     let width = label.len() as f32 * 8.0 + 32.0;
 
     Rectangle::new()
         .width(width)
         .height(CONTROL_HEIGHT)
-        .radius(radius)
+        .radius_top_left(left)
+        .radius_bottom_left(left)
+        .radius_top_right(right)
+        .radius_bottom_right(right)
         .fill(fill)
         .cursor(Pointer)
         .on_hover(move |inside| hover(name.clone(), inside))
