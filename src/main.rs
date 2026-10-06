@@ -8,6 +8,7 @@ mod liquid;
 mod lock_screen;
 mod motion;
 mod overlay;
+mod pomodoro;
 mod profile;
 mod screen_mask;
 mod settings;

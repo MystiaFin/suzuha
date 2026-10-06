@@ -551,6 +551,12 @@ fn launch_selected() {
             crate::converter::open();
         }
 
+        Kind::Pomodoro => {
+            overlay.launcher.hide();
+
+            crate::pomodoro::open();
+        }
+
         Kind::TmuxCommand => search_tmux(&mut overlay),
 
         Kind::Tmux(session) => {

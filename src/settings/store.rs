@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use amane::Service;
 
 // every setting and the value it has until changed
-const DEFAULTS: [(&str, &str); 69] = [
+const DEFAULTS: [(&str, &str); 70] = [
     // appearance
     ("blur_strength", "1"),
     ("reduce_transparency", "false"),
@@ -46,6 +46,7 @@ const DEFAULTS: [(&str, &str); 69] = [
     ("command_tmux", "true"),
     ("command_wallpapers", "true"),
     ("command_converter", "true"),
+    ("command_pomodoro", "true"),
     // wallpaper
     ("wallpaper_folder", "~/Pictures/Wallpapers"),
     ("wallpaper_transition", "circle"),
