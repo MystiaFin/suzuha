@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::io::{BufRead, BufReader};
 use std::os::unix::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{self, Command, Stdio};
@@ -43,6 +44,7 @@ fn run() {
             match waiting {
                 Some(file) => {
                     file.status = Status::Converting;
+                    file.progress = None;
 
                     Some((file.path.clone(), task))
                 }
@@ -98,15 +100,44 @@ fn compress(input: &Path, level: Level, speed: Speed) -> Status {
 }
 
 fn ffmpeg(input: &Path, arguments: &[&str], output: &Path) -> Status {
+    let duration = duration(input);
+
     // arguments are passed straight to ffmpeg, so file names need no quoting
-    let finished = Command::new("ffmpeg")
-        .args(["-hide_banner", "-loglevel", "error", "-nostdin", "-n", "-i"])
+    let child = Command::new("ffmpeg")
+        .args(["-hide_banner", "-loglevel", "error", "-nostdin", "-nostats", "-progress", "pipe:1", "-n", "-i"])
         .arg(input)
         .args(arguments)
         .arg(output)
-        .stdout(Stdio::null())
+        .stdout(Stdio::piped())
         .stderr(Stdio::null())
-        .status();
+        .spawn();
+
+    let Ok(mut child) = child else {
+        return Status::Failed;
+    };
+
+    /*
+     * the progress report has to be read to the end even without a
+     * duration, or ffmpeg stalls once the pipe is full
+     */
+    if let Some(stdout) = child.stdout.take() {
+        for line in BufReader::new(stdout).lines().map_while(Result::ok) {
+            let Some(duration) = duration else {
+                continue;
+            };
+
+            // "N/A" before the first frame is out
+            let Some(Ok(micros)) = line.strip_prefix("out_time_us=").map(str::parse::<f32>) else {
+                continue;
+            };
+
+            let seconds = micros / 1_000_000.0;
+
+            set_progress(input, (seconds / duration).clamp(0.0, 1.0));
+        }
+    }
+
+    let finished = child.wait();
 
     if finished.is_ok_and(|status| status.success()) {
         return Status::Done;
@@ -116,6 +147,37 @@ fn ffmpeg(input: &Path, arguments: &[&str], output: &Path) -> Status {
     let _ = fs::remove_file(output);
 
     Status::Failed
+}
+
+// in seconds, none for a still image or anything ffprobe can't time
+fn duration(input: &Path) -> Option<f32> {
+    let probed = Command::new("ffprobe")
+        .args(["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1"])
+        .arg(input)
+        .stderr(Stdio::null())
+        .output()
+        .ok()?;
+
+    let seconds: f32 = String::from_utf8_lossy(&probed.stdout).trim().parse().ok()?;
+
+    // a still image reports a single frame's length
+    if seconds < 0.5 {
+        return None;
+    }
+
+    Some(seconds)
+}
+
+fn set_progress(input: &Path, progress: f32) {
+    let mut queue = Queue::write();
+
+    for file in &mut queue.files {
+        if file.path == input && file.status == Status::Converting {
+            file.progress = Some(progress);
+
+            break;
+        }
+    }
 }
 
 /*

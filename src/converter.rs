@@ -4,6 +4,7 @@ mod formats;
 mod job;
 
 use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use amane::{
     Center, Color, Column, Full, Key, Parent, Pointer, Rectangle, Row, ScrollArea, Service,
@@ -16,6 +17,7 @@ use formats::{FORMATS, Format, Group};
 
 use crate::fonts;
 use crate::motion;
+use crate::overlay::control_center::wave;
 use crate::theme::{self, Theme};
 
 // what open_window and close_window know this window by
@@ -30,6 +32,11 @@ const TABS_HEIGHT: f32 = 48.0;
 const CONTROL_HEIGHT: f32 = 34.0;
 const CONTROL_GAP: f32 = 12.0;
 const GAP: f32 = 16.0;
+
+const PROGRESS_WIDTH: f32 = 64.0;
+
+// how long the bar takes to fill once when there is no real progress to show
+const SWEEP_MS: u128 = 1500;
 
 const CONVERTER_ICON: &str = "󰓡";
 const COMPRESS_ICON: &str = "󰛀";
@@ -78,6 +85,9 @@ pub enum Status {
 pub struct File {
     path: PathBuf,
     status: Status,
+
+    // from 0 to 1 while converting, none when ffmpeg can't tell how long it is
+    progress: Option<f32>,
 }
 
 pub struct Queue {
@@ -135,7 +145,7 @@ fn add(paths: Vec<PathBuf>) {
             continue;
         }
 
-        queue.files.push(File { path, status: Status::Waiting });
+        queue.files.push(File { path, status: Status::Waiting, progress: None });
     }
 }
 
@@ -373,7 +383,6 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
         .height(height)
         .radius(28.0)
         .fill(theme.surface)
-        .border(1.0, theme.border)
         .on_drop(add);
 
     if queue.files.is_empty() {
@@ -391,10 +400,8 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
 
     let mut rows: Vec<Box<dyn Widget>> = Vec::new();
 
-    let working = words(queue.task).working;
-
     for file in &queue.files {
-        rows.push(Box::new(file_row(theme, file, working, row_width)));
+        rows.push(Box::new(file_row(theme, file, row_width)));
     }
 
     let list = ScrollArea::new("converter_files", Column::new(rows).gap(4.0))
@@ -404,14 +411,7 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
     zone.padding(12.0).child(list)
 }
 
-fn file_row(theme: &Theme, file: &File, working: &'static str, width: f32) -> Row {
-    let (label, color) = match file.status {
-        Status::Waiting => ("Waiting", theme.muted_text),
-        Status::Converting => (working, theme.accent),
-        Status::Done => ("Done", theme.success),
-        Status::Failed => ("Failed", theme.danger),
-    };
-
+fn file_row(theme: &Theme, file: &File, width: f32) -> Row {
     let name = file.path.file_name().unwrap_or_default().to_string_lossy();
 
     let name = Rectangle::new()
@@ -420,11 +420,52 @@ fn file_row(theme: &Theme, file: &File, working: &'static str, width: f32) -> Ro
         .align_child(Start, Center)
         .child(Text::new(name).size(13.0).font(fonts::BODY).color(theme.text).elide());
 
+    let (label, color) = match file.status {
+        Status::Waiting => ("Waiting", theme.muted_text),
+        Status::Done => ("Done", theme.success),
+        Status::Failed => ("Failed", theme.danger),
+        Status::Converting => {
+            return Row::new(children![name, progress(theme, file.progress)])
+                .width(width)
+                .justify(SpaceBetween)
+                .align(Center);
+        }
+    };
+
     let status = Text::new(label).size(12.0).font(fonts::BODY).weight(Weight::SemiBold).color(color);
 
     Row::new(children![name, status])
         .width(width)
         .justify(SpaceBetween)
+        .align(Center)
+}
+
+/*
+ * a wavy bar and how far along, or a bar that keeps filling
+ * when the length is unknown, like a document or a still image
+ */
+fn progress(theme: &Theme, progress: Option<f32>) -> Row {
+    let Some(progress) = progress else {
+        amane::request_frame();
+
+        let millis = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|since| since.as_millis())
+            .unwrap_or(0);
+
+        let sweep = (millis % SWEEP_MS) as f32 / SWEEP_MS as f32;
+
+        return Row::new(children![wave::view(PROGRESS_WIDTH, sweep, true, theme.accent, theme.border)]);
+    };
+
+    let percent = Text::new(format!("{:.0}%", progress * 100.0))
+        .size(12.0)
+        .font(fonts::BODY)
+        .weight(Weight::SemiBold)
+        .color(theme.accent);
+
+    Row::new(children![wave::view(PROGRESS_WIDTH, progress, true, theme.accent, theme.border), percent])
+        .gap(8.0)
         .align(Center)
 }
 

@@ -4,7 +4,7 @@ mod fader;
 mod media;
 mod player;
 mod visualizer;
-mod wave;
+pub mod wave;
 
 use amane::{Audio, Center, Padding, Rectangle, Row, Service, children};
 
