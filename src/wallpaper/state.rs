@@ -50,6 +50,9 @@ pub struct Wallpaper {
     // at startup the backdrop fades in, then the wallpaper rises from below, both 0 to 1
     pub backdrop: Glide,
     pub rise: Glide,
+
+    // true once the rise has finished, for views that only wait for its end
+    pub risen: bool,
 }
 
 impl Service for Wallpaper {
@@ -66,6 +69,7 @@ impl Service for Wallpaper {
             reveal: motion::spatial(0.0, DURATION),
             backdrop: motion::effects(0.0, DURATION),
             rise: motion::spatial(0.0, DURATION),
+            risen: false,
         }
     }
 
@@ -106,6 +110,10 @@ fn play_intro() {
     thread::sleep(motion::paced(DURATION));
 
     Wallpaper::write().rise.to(1.0);
+
+    thread::sleep(motion::paced(DURATION));
+
+    Wallpaper::write().risen = true;
 }
 
 // the new wallpaper grows or fades in over the old one, which is replaced once it is covered

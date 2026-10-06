@@ -92,7 +92,7 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     };
 
     // at startup the cards wait for the wallpaper to finish rising
-    let risen = Wallpaper::read().rise.value() >= 1.0;
+    let risen = Wallpaper::read().risen;
 
     // the cards fade in and out, so the window stays until they are gone
     let target = if wanted && risen { 1.0 } else { 0.0 };
