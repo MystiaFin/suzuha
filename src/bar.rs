@@ -5,6 +5,7 @@ mod reveal;
 mod star;
 mod ring;
 mod system;
+mod timer;
 mod workspaces;
 
 use amane::{

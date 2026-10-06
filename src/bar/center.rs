@@ -3,7 +3,7 @@ use amane::{
     children,
 };
 
-use super::{pill, ring};
+use super::{pill, ring, timer};
 use crate::clock::Clock;
 use crate::settings::Settings;
 use crate::fonts;
@@ -39,6 +39,10 @@ pub fn view(theme: &Theme, width: f32) -> Row {
 
     if show_media {
         items.push(Box::new(media(theme)));
+    }
+
+    if let Some(timer) = timer::view(theme) {
+        items.push(Box::new(timer));
     }
 
     if show_clock {
