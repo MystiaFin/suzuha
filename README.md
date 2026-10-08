@@ -1,6 +1,6 @@
 # READ THIS BEFORE OPENING ANY ISSUE OR PR
 
-this is not a general-purpose shell. it's my oen personal shell, and i'm not accepting any PRs or issues for new features. If you wanna add something, fork it yourself.
+this is not a general-purpose shell. it's my own personal shell, and i'm not accepting any PRs or issues for new features. If you wanna add something, fork it yourself.
 
 <div align="center">
   <h1>suzuha</h1>
