@@ -12,9 +12,7 @@
 
 ## Preview
 
-<!-- drop the preview video link here -->
-
-https://github.com/user-attachments/assets/VIDEO-ID
+need to record again. soon.
 
 ## Overview
 
