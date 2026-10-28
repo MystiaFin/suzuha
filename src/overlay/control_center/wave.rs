@@ -3,6 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use amane::{Canvas, Cap, Circle, Color, Line, Path, Shape};
 
+use crate::motion::{self, DEFAULT_SPATIAL};
+
 pub const HEIGHT: f32 = 10.0;
 
 const LINE: f32 = 4.0;
@@ -35,6 +37,11 @@ pub fn view(width: f32, progress: f32, playing: bool, played: Color, track: Colo
 
     let waving = playing && progress > 0.1 && progress < 0.95;
 
+    // 0 for a flat line, 1 for the full wave, so it swells and settles instead of snapping
+    let target = if waving { 1.0 } else { 0.0 };
+
+    let swell = motion::follow("media:wave", target, DEFAULT_SPATIAL);
+
     let mut shapes: Vec<Box<dyn Shape>> = Vec::new();
 
     let rest_start = (played_width + GAP).max(half_line);
@@ -50,8 +57,8 @@ pub fn view(width: f32, progress: f32, playing: bool, played: Color, track: Colo
     }
 
     if played_width > 0.0 {
-        let line = if waving {
-            wave(half_line, end_x, middle)
+        let line = if swell > 0.0 {
+            wave(half_line, end_x, middle, AMPLITUDE * swell)
         } else {
             Path::new().move_to(half_line, middle).line_to(end_x, middle)
         };
@@ -70,7 +77,7 @@ pub fn view(width: f32, progress: f32, playing: bool, played: Color, track: Colo
 }
 
 // a sine from start to end, shifted along with the clock so it keeps flowing
-fn wave(start: f32, end: f32, middle: f32) -> Path {
+fn wave(start: f32, end: f32, middle: f32, amplitude: f32) -> Path {
     // ponytail: a frame every refresh while the wave shows; lower the rate if it costs too much
     amane::request_frame();
 
@@ -81,7 +88,7 @@ fn wave(start: f32, end: f32, middle: f32) -> Path {
 
     let shift = (millis % PERIOD_MS) as f32 / PERIOD_MS as f32 * WAVELENGTH;
 
-    let height_at = |x: f32| middle + AMPLITUDE * ((x + shift) / WAVELENGTH * TAU).sin();
+    let height_at = |x: f32| middle + amplitude * ((x + shift) / WAVELENGTH * TAU).sin();
 
     let mut path = Path::new().move_to(start, height_at(start));
 

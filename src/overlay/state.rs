@@ -64,6 +64,9 @@ pub struct Overlay {
 
     // popups closed by hand, which leave before their time
     pub closed_popups: Vec<u32>,
+
+    // notifications closed in the list, fading out before they are dismissed
+    pub dismissing: Vec<u32>,
 }
 
 impl Service for Overlay {
@@ -98,6 +101,7 @@ impl Service for Overlay {
             player_switch: motion::spatial(0.0, motion::FAST_SPATIAL),
             hovered_popup: None,
             closed_popups: Vec::new(),
+            dismissing: Vec::new(),
         }
     }
 

@@ -1,6 +1,7 @@
 use std::ffi::OsString;
 use std::os::unix::ffi::OsStringExt;
 use std::path::PathBuf;
+use std::thread;
 
 use amane::{
     Apps, Center, Color, Column, Image, Notification, Notifications, Padding, Parent, Pointer,
@@ -11,7 +12,7 @@ use amane::{
 use super::{fade_target, hover};
 use crate::clock::Clock;
 use crate::fonts;
-use crate::motion;
+use crate::motion::{self, FAST_EFFECTS, FAST_SPATIAL};
 use crate::overlay::Overlay;
 use crate::theme::{self, Theme};
 
@@ -20,6 +21,9 @@ const LIST: &str = "notifications";
 const TITLE_HEIGHT: f32 = 30.0;
 
 const GAP: f32 = 10.0;
+
+// a little past the fade and the close, so the space is shut before the card goes
+const DISMISS_DELAY: u64 = FAST_EFFECTS + FAST_SPATIAL + 50;
 
 // what sets a card in the list apart from one popping up at the screen's edge
 pub struct CardStyle {
@@ -69,7 +73,7 @@ const LIST_CARD: CardStyle = CardStyle {
     close_size: 15.0,
     close_inset: 12.0,
     close_glyph_size: 15.0,
-    close: Notifications::dismiss,
+    close: dismiss,
     popup: false,
 };
 
@@ -153,17 +157,51 @@ fn list(
     let mut cards: Vec<Box<dyn Widget>> = Vec::new();
     let mut total = 0.0;
 
+    // how much of the cards above is still open, so a gap closes along with the card before it
+    let mut open_above: f32 = 0.0;
+
     for notification in notifications.list().iter().rev() {
+        let id = notification.id();
+
         let (card, card_height) = card(overlay, theme, notification, width, &LIST_CARD);
 
-        total += card_height;
+        let leaving = overlay.dismissing.contains(&id);
 
-        cards.push(Box::new(card));
+        let opacity = motion::fade(&format!("notification:{id}:opacity"), if leaving { 0.0 } else { 1.0 });
+
+        // the space only starts closing once the card has faded out
+        let faded = leaving && opacity == 0.0;
+
+        let open_target = if faded { 0.0 } else { 1.0 };
+
+        let open = motion::follow(&format!("notification:{id}:open"), open_target, FAST_SPATIAL);
+
+        let gap = GAP * open_above.min(1.0);
+
+        let slot_height = (gap + card_height) * open;
+
+        let slot = Rectangle::new().width(width).height(slot_height);
+
+        // a faded card leaves only its space behind, so its buttons can't be hit while it closes
+        if faded {
+            cards.push(Box::new(slot));
+        } else {
+            let padding = Padding {
+                top: gap,
+                right: 0.0,
+                bottom: 0.0,
+                left: 0.0,
+            };
+
+            cards.push(Box::new(slot.padding(padding).opacity(opacity).child(card)));
+        }
+
+        total += slot_height;
+
+        open_above += open;
     }
 
-    total += GAP * (cards.len() - 1) as f32;
-
-    let column = Column::new(cards).width(width).height(total).gap(GAP);
+    let column = Column::new(cards).width(width).height(total);
 
     area.child(ScrollArea::new(LIST, column))
 }
@@ -527,6 +565,27 @@ fn close_button(
         .on_hover(move |inside| hover(hover_name.clone(), inside))
         .on_click(move |_| close(id))
         .child(glyph)
+}
+
+// the card fades and its space closes first, then the notification is really gone
+fn dismiss(id: u32) {
+    {
+        let mut overlay = Overlay::write();
+
+        if overlay.dismissing.contains(&id) {
+            return;
+        }
+
+        overlay.dismissing.push(id);
+    }
+
+    thread::spawn(move || {
+        thread::sleep(motion::paced(DISMISS_DELAY));
+
+        Notifications::dismiss(id);
+
+        Overlay::write().dismissing.retain(|dismissed| *dismissed != id);
+    });
 }
 
 // bodies may hold simple markup like <b>, which is left out
