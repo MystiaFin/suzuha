@@ -2,8 +2,8 @@
 @define-color theme_fg_color @FOREGROUND@;
 @define-color theme_base_color @BACKGROUND@;
 @define-color theme_text_color @FOREGROUND@;
-@define-color theme_selected_bg_color @ACCENT@;
-@define-color theme_selected_fg_color @ON_ACCENT@;
+@define-color theme_selected_bg_color @SELECTION@;
+@define-color theme_selected_fg_color @FOREGROUND@;
 @define-color insensitive_bg_color @SURFACE@;
 @define-color insensitive_fg_color @MUTED@;
 @define-color borders @BORDER@;
@@ -36,6 +36,18 @@
   outline-color: alpha(@ACCENT@, 0.45);
   border-color: transparent;
   box-shadow: none;
+}
+
+/* the settings window's typeface, which everything inside a window inherits */
+window,
+tooltip,
+popover {
+  font-family: "Poppins", sans-serif;
+}
+
+.monospace,
+textview.monospace {
+  font-family: monospace;
 }
 
 window,
@@ -110,12 +122,13 @@ searchentry:focus {
   outline-color: alpha(@ACCENT@, 0.65);
 }
 
+/* the settings window's selection: a tint of the accent under the usual text */
 selection,
 *:selected,
 .view:selected,
 row:selected {
-  background-color: @ACCENT@;
-  color: @ON_ACCENT@;
+  background-color: @SELECTION@;
+  color: @FOREGROUND@;
 }
 
 rubberband,
@@ -155,42 +168,7 @@ stacksidebar row:focus,
 .sidebar row:selected,
 stacksidebar row:selected,
 .navigation-sidebar row:selected {
-  color: @ON_ACCENT@;
-}
-
-.thunar .sidebar,
-.thunar .sidebar .view {
-  background-color: mix(@SURFACE@, @BACKGROUND@, 0.35);
   color: @FOREGROUND@;
-}
-
-.thunar .sidebar {
-  border-right: none;
-}
-
-.thunar .sidebar .view {
-  padding: 8px 6px;
-  -GtkTreeView-horizontal-separator: 4;
-  -GtkTreeView-vertical-separator: 8;
-}
-
-.thunar .sidebar .view *:hover {
-  background-color: mix(@SURFACE@, @FOREGROUND@, 0.08);
-}
-
-.thunar .sidebar .view:selected,
-.thunar .sidebar .view:selected:focus {
-  border-left: 3px solid @ACCENT@;
-}
-
-.thunar .sidebar .view *:selected,
-.thunar .sidebar .view *:selected:focus {
-  background-color: @SELECTION@;
-  color: @FOREGROUND@;
-}
-
-.thunar .sidebar .view *:disabled {
-  color: @MUTED@;
 }
 
 .sidebar separator,
@@ -202,6 +180,7 @@ stacksidebar separator,
   margin: 0;
 }
 
+/* menus sized like the settings window's dropdowns */
 popover,
 popover.background,
 menu,
@@ -210,16 +189,34 @@ context-menu {
   background-color: @SURFACE@;
   color: @FOREGROUND@;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 4px;
+  font-size: 13px;
 }
 
 menuitem,
 popover modelbutton {
   border: none;
-  border-radius: 7px;
-  padding: 5px 8px;
-  margin: 1px;
+  border-radius: 8px;
+  min-height: 24px;
+  padding: 6px 12px;
+  margin: 0;
+}
+
+menuitem:hover,
+popover modelbutton:hover {
+  background-color: @HOVER@;
+  color: @FOREGROUND@;
+}
+
+menu separator,
+.menu separator {
+  background-color: alpha(@BORDER@, 0.65);
+  margin: 4px 10px;
+}
+
+menuitem accelerator {
+  color: @MUTED@;
 }
 
 notebook > header,
@@ -248,8 +245,7 @@ tabbar tab:checked {
 
 switch,
 scale trough,
-progressbar trough,
-scrollbar trough {
+progressbar trough {
   background-color: @BORDER@;
   border: none;
 }
@@ -267,8 +263,25 @@ scale slider {
   border: none;
 }
 
+scrollbar,
+scrollbar trough {
+  background-color: transparent;
+  border: none;
+}
+
+/* the steppers would otherwise take the look of every other button */
+scrollbar button {
+  background: none;
+  border: none;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  -gtk-icon-source: none;
+}
+
 scrollbar slider {
-  background-color: @MUTED@;
+  background-color: alpha(@MUTED@, 0.55);
   border: none;
   border-radius: 999px;
   min-width: 6px;
@@ -338,18 +351,6 @@ paned > separator:focus {
   margin: 0;
 }
 
-window.thunar toolbar entry,
-window.thunar toolbar .path-bar button {
-  background-color: @path_bar_bg_color;
-}
-
-.thunar paned > separator,
-.thunar paned > separator:focus {
-  background-color: transparent;
-  background-image: none;
-  border: none;
-  min-width: 6px;
-}
 
 spinner:not(:checked) {
   opacity: 0;
@@ -357,4 +358,151 @@ spinner:not(:checked) {
 
 spinner:checked {
   opacity: 1;
+}
+
+/*
+ * thunar laid out like amane's settings window: everything on the
+ * background, the places in a rounded card, rounded tinted selections,
+ * and its sizes: 13px text, 16px icons, 46px rows, 40px controls
+ */
+window.thunar,
+.thunar menubar,
+.thunar toolbar,
+.thunar notebook > stack,
+.thunar notebook .view,
+.thunar statusbar {
+  background-color: @BACKGROUND@;
+}
+
+window.thunar {
+  font-size: 13px;
+}
+
+.thunar menubar {
+  padding: 6px 16px 0;
+}
+
+.thunar menubar > menuitem {
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.thunar menubar > menuitem:hover {
+  background-color: @HOVER@;
+}
+
+.thunar toolbar {
+  padding: 12px 16px;
+}
+
+/* 40px squares like the settings close button, the 24px icons drawn at its 18 */
+.thunar toolbar button {
+  background-color: transparent;
+  color: @SECONDARY@;
+  border-radius: 12px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 8px;
+  margin: 0 2px;
+}
+
+.thunar toolbar button image {
+  -gtk-icon-transform: scale(0.75);
+}
+
+.thunar toolbar button:hover {
+  background-color: @HOVER@;
+  color: @FOREGROUND@;
+}
+
+.thunar toolbar button:checked {
+  background-color: @SELECTION@;
+  color: @ACCENT@;
+}
+
+.thunar toolbar entry {
+  background-color: @HIGH@;
+  border-radius: 12px;
+  min-height: 40px;
+  padding: 0 14px;
+  margin: 0 10px;
+  font-size: 14px;
+}
+
+.thunar toolbar entry:focus {
+  box-shadow: inset 0 0 0 2px alpha(@ACCENT@, 0.55);
+}
+
+.thunar toolbar .path-bar button {
+  background-color: @HIGH@;
+  color: @SECONDARY@;
+  margin: 0 2px;
+  padding: 4px 12px;
+}
+
+.thunar toolbar .path-bar button:checked {
+  background-color: @SELECTION@;
+  color: @FOREGROUND@;
+}
+
+.thunar .sidebar {
+  background-color: @SURFACE@;
+  border: none;
+  border-radius: 20px;
+  margin: 0 0 16px 16px;
+}
+
+/*
+ * tree views take no padding, so clear borders inset each row's pill: 10px
+ * from the card's sides and 3px apart, the way the settings list's are; the
+ * rounding is cut at the border, so the pills' radii add it back on
+ */
+.thunar .sidebar .view {
+  background-color: transparent;
+  background-clip: padding-box;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  color: @SECONDARY@;
+  -GtkTreeView-horizontal-separator: 56;
+  -GtkTreeView-vertical-separator: 26;
+}
+
+.thunar .sidebar .view:hover {
+  background-color: @HOVER@;
+  color: @FOREGROUND@;
+  border-radius: 22px / 14px;
+}
+
+.thunar .sidebar .view:selected,
+.thunar .sidebar .view:selected:focus {
+  background-color: @SELECTION@;
+  color: @FOREGROUND@;
+  border-radius: 22px / 14px;
+  font-weight: 600;
+}
+
+.thunar .sidebar .view:disabled {
+  color: @MUTED@;
+}
+
+.thunar paned > separator,
+.thunar paned > separator:focus {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  min-width: 8px;
+}
+
+/* the detailed list's rows, square since each column draws its own */
+.thunar treeview.view:selected {
+  background-color: @SELECTION@;
+  color: @FOREGROUND@;
+}
+
+.thunar statusbar {
+  color: @MUTED@;
+  padding: 0 10px 6px;
+  font-size: 11px;
 }

@@ -1,18 +1,17 @@
-use std::path::Path;
+mod glyphs;
+mod icons;
 
 use amane::Color;
 
 use super::{config_home, fill, hex, home, write};
+use crate::settings;
 use crate::theme::{self, Theme};
 
 const TEMPLATE: &str = include_str!("gtk.css");
 
+// the gtk themes, and the icon themes that go with them by the same names
 const LIGHT: &str = "AmaneDynamicLight";
 const DARK: &str = "AmaneDynamicDark";
-
-// installed icon themes that match each mode, used when they are there
-const LIGHT_ICONS: &str = "AmaneSidebarLight";
-const DARK_ICONS: &str = "AmaneSidebarDark";
 
 const YELLOW: Color = Color::rgb(0xf9, 0xe2, 0xaf);
 
@@ -26,39 +25,36 @@ pub fn export(theme: &Theme) {
     for (name, light) in [(LIGHT, true), (DARK, false)] {
         let folder = format!("{data}/themes/{name}");
 
-        let stylesheet = stylesheet(&theme::for_mode(Some(light)));
+        let mode = theme::for_mode(Some(light));
+
+        let stylesheet = stylesheet(&mode);
 
         write(&format!("{folder}/index.theme"), &index(name));
         write(&format!("{folder}/gtk-3.0/gtk.css"), &stylesheet);
         write(&format!("{folder}/gtk-4.0/gtk.css"), &stylesheet);
+
+        icons::export(&format!("{data}/icons/{name}"), name, &mode);
     }
 
-    let (active, inactive, scheme, icons) = if theme.light {
-        (LIGHT, DARK, "prefer-light", LIGHT_ICONS)
+    let (active, inactive, scheme) = if theme.light {
+        (LIGHT, DARK, "prefer-light")
     } else {
-        (DARK, LIGHT, "prefer-dark", DARK_ICONS)
+        (DARK, LIGHT, "prefer-dark")
     };
 
     let interface = "/org/gnome/desktop/interface";
-
-    let icons_installed = Path::new(&format!("{data}/icons/{icons}")).exists();
-
-    let icon_command = if icons_installed {
-        format!("dconf write {interface}/icon-theme \"'{icons}'\";")
-    } else {
-        String::new()
-    };
 
     let gtk4 = format!("{}/gtk-4.0", config_home());
 
     /*
      * switching away and back makes running gtk 3 apps read the rewritten
-     * css; the portal restarts last so its file dialogs pick up gtk 4's
+     * css and icons; the portal restarts last so its file dialogs pick up gtk 4's
      */
     let script = format!(
         "dconf write {interface}/gtk-theme \"'{inactive}'\"; \
          dconf write {interface}/gtk-theme \"'{active}'\"; \
-         {icon_command} \
+         dconf write {interface}/icon-theme \"'{inactive}'\"; \
+         dconf write {interface}/icon-theme \"'{active}'\"; \
          dconf write {interface}/color-scheme \"'{scheme}'\"; \
          sleep 0.8; mkdir -p '{gtk4}'; \
          ln -sfn '{data}/themes/{active}/gtk-4.0/gtk.css' '{gtk4}/gtk.css' && \
@@ -76,9 +72,12 @@ fn stylesheet(theme: &Theme) -> String {
     let names = [
         ("@BACKGROUND@", hex(theme.background)),
         ("@SURFACE@", hex(theme.surface)),
+        ("@HOVER@", hex(theme.hover_surface)),
+        ("@HIGH@", hex(settings::high_surface(theme))),
         ("@ON_ACCENT@", hex(theme.on_accent)),
         ("@BORDER@", hex(theme.border)),
         ("@FOREGROUND@", hex(theme.text)),
+        ("@SECONDARY@", hex(theme.secondary_text)),
         ("@MUTED@", hex(theme.secondary_text)),
         ("@ACCENT@", hex(theme.accent)),
         ("@SELECTION@", hex(theme.selected_surface)),
