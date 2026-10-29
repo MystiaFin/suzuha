@@ -325,13 +325,25 @@ radio:indeterminate {
   color: @ON_ACCENT@;
 }
 
+/*
+ * gtk 3 tells the compositor a window with a solid background is opaque
+ * corners and all, so the corners would show black; the tooltip's window
+ * stays clear and the rounded fill goes on the box inside it
+ */
 tooltip,
 tooltip.background {
-  background-color: @SURFACE@;
+  background-color: transparent;
   color: @FOREGROUND@;
   border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+tooltip > box {
+  background-color: @SURFACE@;
   border-radius: 8px;
-  padding: 4px 7px;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 
 .dim-label,
