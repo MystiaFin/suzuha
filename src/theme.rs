@@ -1,4 +1,5 @@
 mod hsl;
+pub mod oklch;
 mod mode;
 mod scheme;
 

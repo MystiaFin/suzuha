@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use amane::Service;
 
 // every setting and the value it has until changed
-const DEFAULTS: [(&str, &str); 70] = [
+const DEFAULTS: [(&str, &str); 71] = [
     // appearance
     ("blur_strength", "1"),
     ("reduce_transparency", "false"),
@@ -82,6 +82,7 @@ const DEFAULTS: [(&str, &str); 70] = [
     ("integration_gtk", "false"),
     ("integration_terminal", "false"),
     ("integration_tmux", "false"),
+    ("integration_neovim", "false"),
     ("integration_vesktop", "false"),
     ("integration_spotify", "false"),
     ("integration_btop", "false"),

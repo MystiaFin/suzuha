@@ -1,6 +1,7 @@
 mod bar;
 mod clock;
 mod converter;
+mod devices;
 mod floating;
 mod fonts;
 mod integrations;
@@ -18,6 +19,7 @@ mod wallpaper;
 
 use amane::{App, Apps, Notifications, Service};
 
+use devices::Devices;
 use integrations::Export;
 use lock_screen::Logind;
 use wallpaper::{Shuffle, Wallpaper};
@@ -37,6 +39,9 @@ fn main() {
 
     // listens for logind asking to lock, like `loginctl lock-session` from the power menu
     drop(Logind::read());
+
+    // notifies when a usb device is plugged in or pulled out
+    drop(Devices::read());
 
     // writes the theme out to the programs turned on under integrations
     drop(Export::read());

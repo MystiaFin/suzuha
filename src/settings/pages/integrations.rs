@@ -4,7 +4,7 @@ use super::super::page::Page;
 use super::super::{Confirm, Settings, Shown, switch};
 
 // the key, title, what the row says, and what turning it on does
-const INTEGRATIONS: [(&str, &str, &str, &str); 7] = [
+const INTEGRATIONS: [(&str, &str, &str, &str); 8] = [
     (
         "integration_gtk",
         "GTK",
@@ -22,6 +22,12 @@ const INTEGRATIONS: [(&str, &str, &str, &str); 7] = [
         "tmux",
         "Status line and pane colors",
         "This overwrites tmux-colors.conf and asks running tmux servers to source that file.",
+    ),
+    (
+        "integration_neovim",
+        "Neovim",
+        "Syntax colors from the wallpaper",
+        "This overwrites nvim-palette.lua; the amane colorscheme in Neovim reads it and recolors open editors when it changes.",
     ),
     (
         "integration_vesktop",
