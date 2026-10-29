@@ -180,6 +180,21 @@ stacksidebar separator,
   margin: 0;
 }
 
+/*
+ * a menu is drawn in a window of its own, which would otherwise take the
+ * background above and fill in behind the menu's rounded corners
+ */
+window.popup,
+window.popup.background,
+.csd.popup decoration {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.csd.popup decoration {
+  border-radius: 12px;
+}
+
 /* menus sized like the settings window's dropdowns */
 popover,
 popover.background,
