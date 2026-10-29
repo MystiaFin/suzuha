@@ -1,25 +1,39 @@
+use std::cell::RefCell;
+
 use amane::{
-    Audio, Center, Media, Parent, Pointer, Rectangle, Row, Scroll, Service, Text, Widget,
-    children,
+    Audio, Center, Media, Padding, Parent, Pointer, Rectangle, Row, Scroll, Service, Size, Start,
+    Text, Widget, children,
 };
 
 use super::{pill, ring, timer};
 use crate::clock::Clock;
 use crate::settings::Settings;
 use crate::fonts;
+use crate::motion::{self, Spring};
 use crate::overlay::Overlay;
 use crate::theme::Theme;
 
 const MEDIA_ICON: &str = "󰎈";
 
 // longer song text is cut off
-const MEDIA_TEXT_WIDTH: f32 = 180.0;
+const MEDIA_CHARACTERS: usize = 32;
+
+const MEDIA_TEXT_SIZE: f32 = 13.0;
+
+// the room at the pill's ends, and between the rings and the song
+const PADDING: f32 = 10.0;
+const SECTION_GAP: f32 = 12.0;
 
 const RING_SIZE: f32 = 18.0;
 const RING_THICKNESS: f32 = 4.0;
 
 // how far one wheel step moves a level
 const STEP: i32 = 5;
+
+thread_local! {
+    // kept outside services, a service write from view() would draw frames forever
+    static WIDTH: RefCell<Option<Spring>> = const { RefCell::new(None) };
+}
 
 pub fn view(theme: &Theme, width: f32) -> Row {
     let settings = Settings::read();
@@ -33,12 +47,8 @@ pub fn view(theme: &Theme, width: f32) -> Row {
 
     let mut items: Vec<Box<dyn Widget>> = Vec::new();
 
-    if show_audio {
-        items.push(Box::new(audio(theme)));
-    }
-
-    if show_media {
-        items.push(Box::new(media(theme)));
+    if show_audio || show_media {
+        items.push(Box::new(media(theme, show_audio, show_media)));
     }
 
     if let Some(timer) = timer::view(theme) {
@@ -57,8 +67,57 @@ pub fn view(theme: &Theme, width: f32) -> Row {
         .align(Center)
 }
 
-// the speaker and microphone rings, scroll over one to change its level, click to open the control center
-fn audio(theme: &Theme) -> Rectangle {
+// the speaker and microphone rings, then the song, in one pill that opens the control center
+fn media(theme: &Theme, show_audio: bool, show_song: bool) -> Rectangle {
+    let mut sections: Vec<Box<dyn Widget>> = Vec::new();
+
+    // the padding at both ends
+    let mut full = PADDING * 2.0;
+
+    if show_audio {
+        sections.push(Box::new(rings(theme)));
+
+        // two rings 8px apart
+        full += RING_SIZE * 2.0 + 8.0;
+    }
+
+    if show_audio && show_song {
+        full += SECTION_GAP;
+    }
+
+    if show_song {
+        let (song, song_width) = song(theme);
+
+        sections.push(Box::new(song));
+
+        full += song_width;
+    }
+
+    let width = follow_width(full);
+
+    // always as wide as the pill is going to be, so a shrinking pill clips it instead of squeezing it
+    let content = Rectangle::new()
+        .width(full)
+        .height(Parent)
+        .align_child(Start, Center)
+        .padding(Padding {
+            top: 0.0,
+            right: 0.0,
+            bottom: 0.0,
+            left: PADDING,
+        })
+        .child(Row::new(sections).gap(SECTION_GAP).align(Center));
+
+    pill::view(width, theme.surface)
+        .clip()
+        .cursor(Pointer)
+        .on_click(|_| Overlay::toggle_control_center())
+        .align_child(Start, Center)
+        .child(content)
+}
+
+// scroll over a ring to change its level
+fn rings(theme: &Theme) -> Row {
     let audio = Audio::read();
 
     let speaker_color = if audio.muted() {
@@ -94,18 +153,11 @@ fn audio(theme: &Theme) -> Rectangle {
             theme.border,
         ));
 
-    // two rings 8px apart, plus 16px of padding
-    let width = RING_SIZE * 2.0 + 8.0 + 16.0;
-
-    pill::view(width, theme.surface)
-        .cursor(Pointer)
-        .on_click(|_| Overlay::toggle_control_center())
-        .align_child(Center, Center)
-        .child(Row::new(children![speaker, microphone]).gap(8.0).align(Center))
+    Row::new(children![speaker, microphone]).gap(8.0).align(Center)
 }
 
-// "artist - title", or "No media" while nothing plays
-fn media(theme: &Theme) -> Rectangle {
+// the icon and "artist - title", or "No media" while nothing plays, and how wide they are
+fn song(theme: &Theme) -> (Row, f32) {
     let media = Media::read();
 
     let text = if media.title().is_empty() {
@@ -116,27 +168,52 @@ fn media(theme: &Theme) -> Rectangle {
         format!("{} - {}", media.artist(), media.title())
     };
 
-    let text_width = pill::text_width(&text, 13.0).min(MEDIA_TEXT_WIDTH);
+    let text = shorten(&text);
 
     let icon = Text::new(MEDIA_ICON)
         .size(14.0)
         .font(fonts::NERD)
         .color(theme.success);
 
-    let label = Rectangle::new()
-        .width(text_width)
-        .height(Parent)
-        .align_child(amane::Start, Center)
-        .child(pill::label(&text, 13.0, theme.text).elide());
+    let label = pill::label(&text, MEDIA_TEXT_SIZE, theme.text);
 
-    // the icon is about 9px wide, then a 7px gap and 20px of padding
-    let width = 9.0 + 7.0 + text_width + 20.0;
+    // the icon, a 7px gap, then the text, each as wide as the font really draws it
+    let width = measure(&icon) + 7.0 + measure(&label);
 
-    pill::view(width, theme.surface)
-        .cursor(Pointer)
-        .on_click(|_| Media::play_pause())
-        .align_child(Center, Center)
-        .child(Row::new(children![icon, label]).gap(7.0).align(Center))
+    let row = Row::new(children![icon, label]).gap(7.0).align(Center);
+
+    (row, width)
+}
+
+// song text past MEDIA_CHARACTERS is cut off
+fn shorten(text: &str) -> String {
+    if text.chars().count() <= MEDIA_CHARACTERS {
+        return String::from(text);
+    }
+
+    // one character is left for the ellipsis
+    let kept: String = text.chars().take(MEDIA_CHARACTERS - 1).collect();
+
+    format!("{}…", kept.trim_end())
+}
+
+// the width a widget asks for, from its real font measurements for text
+fn measure(widget: &dyn Widget) -> f32 {
+    match widget.width() {
+        Size::Fixed(width) => width,
+        Size::Parent => 0.0,
+    }
+}
+
+// springs toward the width the pill wants, so it grows and shrinks as the song changes
+fn follow_width(target: f32) -> f32 {
+    WIDTH.with_borrow_mut(|width| {
+        let spring = width.get_or_insert_with(|| motion::size(target));
+
+        spring.to(target);
+
+        spring.value()
+    })
 }
 
 // "09:05 PM  •  Tuesday, 29 Sep 2026", plain text with 8px in front, no pill
