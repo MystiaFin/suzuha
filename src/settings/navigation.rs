@@ -1,4 +1,7 @@
-use amane::{Center, Column, Padding, Pointer, Rectangle, Row, Service, Stack, Start, Text, Weight, Widget, children};
+use amane::{
+    Center, Column, Padding, Pointer, Rectangle, Row, Service, Stack, Start, Text, Weight, Widget,
+    children,
+};
 
 use super::{PAGES, Page, Shown, hover, hovered};
 use crate::fonts;
@@ -27,7 +30,9 @@ pub fn view(theme: &Theme, shown: Page, height: f32) -> Rectangle {
             position = index;
         }
 
-        items.push(Box::new(item(theme, *page, icon, label, current, item_width)));
+        items.push(Box::new(item(
+            theme, *page, icon, label, current, item_width,
+        )));
     }
 
     let target = TOP + position as f32 * (ITEM_HEIGHT + ITEM_GAP);
@@ -58,10 +63,21 @@ pub fn view(theme: &Theme, shown: Page, height: f32) -> Rectangle {
         .radius(20.0)
         .fill(theme.surface)
         .clip()
-        .child(Stack::new(children![selection, list]).width(WIDTH).height(height))
+        .child(
+            Stack::new(children![selection, list])
+                .width(WIDTH)
+                .height(height),
+        )
 }
 
-fn item(theme: &Theme, page: Page, icon: &str, label: &str, current: bool, width: f32) -> Rectangle {
+fn item(
+    theme: &Theme,
+    page: Page,
+    icon: &str,
+    label: &str,
+    current: bool,
+    width: f32,
+) -> Rectangle {
     let hover_name = format!("navigation:{label}");
 
     // the hover shows on every page but the current one, which the selection already marks
@@ -81,7 +97,13 @@ fn item(theme: &Theme, page: Page, icon: &str, label: &str, current: bool, width
         .width(26.0)
         .height(26.0)
         .align_child(Center, Center)
-        .child(Text::new(icon).size(16.0).font(fonts::NERD).tight().color(icon_color));
+        .child(
+            Text::new(icon)
+                .size(16.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(icon_color),
+        );
 
     let label = Text::new(label)
         .size(13.0)

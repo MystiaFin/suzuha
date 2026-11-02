@@ -7,8 +7,8 @@ use std::time::Duration;
 
 use amane::Service;
 
-use crate::wallpaper::Wallpaper;
 use crate::settings::Settings;
+use crate::wallpaper::Wallpaper;
 
 use analysis::{Analysis, Area};
 
@@ -121,7 +121,17 @@ fn analyse(path: &str) -> Option<Analysis> {
     let size = format!("{SAMPLE}x{SAMPLE}");
 
     let output = Command::new("magick")
-        .args([path, "-auto-orient", "-resize", &size, "-colorspace", "sRGB", "-depth", "8", "ppm:-"])
+        .args([
+            path,
+            "-auto-orient",
+            "-resize",
+            &size,
+            "-colorspace",
+            "sRGB",
+            "-depth",
+            "8",
+            "ppm:-",
+        ])
         .output()
         .ok()?;
 
@@ -181,6 +191,14 @@ mod tests {
         let analysis = Analysis::new(pixels, width, height).expect("failed to analyse");
 
         // a 2:1 picture on a square screen shows its middle half
-        assert_eq!(crop(&analysis, 100.0, 100.0), Area { x: 1, y: 0, width: 2, height: 2 });
+        assert_eq!(
+            crop(&analysis, 100.0, 100.0),
+            Area {
+                x: 1,
+                y: 0,
+                width: 2,
+                height: 2
+            }
+        );
     }
 }

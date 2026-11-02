@@ -63,7 +63,11 @@ pub fn to_color(hsl: Hsl) -> Color {
 
     let lift = hsl.lightness - chroma / 2.0;
 
-    Color::rgb(channel(red + lift), channel(green + lift), channel(blue + lift))
+    Color::rgb(
+        channel(red + lift),
+        channel(green + lift),
+        channel(blue + lift),
+    )
 }
 
 fn channel(value: f32) -> u8 {

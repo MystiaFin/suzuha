@@ -141,7 +141,11 @@ impl Spring {
      * it started, so reading it never depends on how often frames are drawn
      */
     fn state(&self) -> (f32, f32) {
-        let time = self.clock.lock().expect("failed to lock spring clock").advance();
+        let time = self
+            .clock
+            .lock()
+            .expect("failed to lock spring clock")
+            .advance();
 
         let offset = self.from - self.target;
         let speed = self.velocity;

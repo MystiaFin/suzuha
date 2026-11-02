@@ -7,7 +7,10 @@ use crate::overlay::Overlay;
 pub fn shown<'a>(media: &'a Media, overlay: &Overlay) -> Option<&'a MediaPlayer> {
     let chosen = overlay.player.as_deref();
 
-    let found = media.players().iter().find(|player| Some(player.name()) == chosen);
+    let found = media
+        .players()
+        .iter()
+        .find(|player| Some(player.name()) == chosen);
 
     found.or(media.active())
 }
@@ -26,7 +29,10 @@ pub fn switch(direction: i32) {
 
     let current = shown(&media, &overlay).map(MediaPlayer::name);
 
-    let index = players.iter().position(|player| Some(player.name()) == current).unwrap_or(0);
+    let index = players
+        .iter()
+        .position(|player| Some(player.name()) == current)
+        .unwrap_or(0);
 
     let count = players.len() as i32;
 

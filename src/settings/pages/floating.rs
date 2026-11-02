@@ -8,7 +8,11 @@ pub fn build(page: &mut Page) {
         "floating_visibility",
         "Visibility",
         "Show widgets only on an empty desktop, always, or never",
-        &[("Desktop only", "desktop"), ("Always", "always"), ("Hidden", "hidden")],
+        &[
+            ("Desktop only", "desktop"),
+            ("Always", "always"),
+            ("Hidden", "hidden"),
+        ],
     );
 
     slider::add(
@@ -48,8 +52,18 @@ pub fn build(page: &mut Page) {
 
     switch::add(page, "widget_clock", "Clock", "Large desktop clock");
     switch::add(page, "widget_weather", "Weather", "Current weather summary");
-    switch::add(page, "widget_cpu_temperature", "CPU temperature", "Processor thermal card");
-    switch::add(page, "widget_cpu_usage", "CPU usage", "Processor utilization card");
+    switch::add(
+        page,
+        "widget_cpu_temperature",
+        "CPU temperature",
+        "Processor thermal card",
+    );
+    switch::add(
+        page,
+        "widget_cpu_usage",
+        "CPU usage",
+        "Processor utilization card",
+    );
 
     switch::add(
         page,
@@ -58,8 +72,18 @@ pub fn build(page: &mut Page) {
         "Shown only when a supported GPU is available",
     );
 
-    switch::add(page, "widget_uv", "UV index", "Requires configured weather data");
-    switch::add(page, "widget_humidity", "Humidity", "Requires configured weather data");
+    switch::add(
+        page,
+        "widget_uv",
+        "UV index",
+        "Requires configured weather data",
+    );
+    switch::add(
+        page,
+        "widget_humidity",
+        "Humidity",
+        "Requires configured weather data",
+    );
 
     switch::add(
         page,

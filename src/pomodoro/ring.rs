@@ -42,7 +42,12 @@ pub fn view(size: f32, progress: f32, running: bool, played: Color, track: Color
     let rest = 360.0 - sweep - gap * 2.0;
 
     if sweep == 0.0 {
-        shapes.push(Box::new(Arc::new().center(middle, middle).radius(radius).stroke(LINE, track)));
+        shapes.push(Box::new(
+            Arc::new()
+                .center(middle, middle)
+                .radius(radius)
+                .stroke(LINE, track),
+        ));
     } else if rest > 0.0 {
         let arc = Arc::new()
             .center(middle, middle)
@@ -56,7 +61,9 @@ pub fn view(size: f32, progress: f32, running: bool, played: Color, track: Color
     }
 
     if sweep > 0.0 && waving {
-        let wave = wave(middle, radius, sweep).stroke(LINE, played).cap(Cap::Round);
+        let wave = wave(middle, radius, sweep)
+            .stroke(LINE, played)
+            .cap(Cap::Round);
 
         shapes.push(Box::new(wave));
     } else if sweep > 0.0 {
@@ -91,7 +98,10 @@ fn wave(middle: f32, radius: f32, sweep: f32) -> Path {
 
         let distance = radius + swing;
 
-        (middle + distance * angle.sin(), middle - distance * angle.cos())
+        (
+            middle + distance * angle.sin(),
+            middle - distance * angle.cos(),
+        )
     };
 
     let (x, y) = point(0.0);

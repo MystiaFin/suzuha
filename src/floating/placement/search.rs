@@ -155,7 +155,10 @@ pub fn arrange(request: &Request) -> Option<HashMap<Name, (f32, f32)>> {
 
         occupied.push(environment_group);
 
-        let groups_score: f32 = occupied[occupied.len() - 2..].iter().map(|group| group.score).sum();
+        let groups_score: f32 = occupied[occupied.len() - 2..]
+            .iter()
+            .map(|group| group.score)
+            .sum();
 
         let total = score + groups_score - search.balance_penalty(&occupied);
 
@@ -201,7 +204,9 @@ impl<'a> Search<'a> {
             )
         };
 
-        let gap = (CARD_GAP / request.screen.0 * width as f32).round().max(1.0) as i32;
+        let gap = (CARD_GAP / request.screen.0 * width as f32)
+            .round()
+            .max(1.0) as i32;
 
         Self {
             request,
@@ -264,10 +269,7 @@ impl<'a> Search<'a> {
         let mut placed = Vec::new();
 
         for card in cards {
-            placed.push(Card {
-                y,
-                ..card.clone()
-            });
+            placed.push(Card { y, ..card.clone() });
 
             y += card.height + self.gap;
         }
@@ -283,7 +285,12 @@ impl<'a> Search<'a> {
     }
 
     // the layout at every anchor that fits and stays clear of what is taken, best first
-    fn placements(&self, layout: &Layout, occupied: &[Placement], text_only: bool) -> Vec<Placement> {
+    fn placements(
+        &self,
+        layout: &Layout,
+        occupied: &[Placement],
+        text_only: bool,
+    ) -> Vec<Placement> {
         let (left, top, free_width, free_height) = self.bounds;
 
         let mut placements = Vec::new();
@@ -298,7 +305,10 @@ impl<'a> Search<'a> {
 
             let mut placement = self.put(layout, x, y);
 
-            if occupied.iter().any(|taken| overlaps(&placement, taken, self.gap * 2)) {
+            if occupied
+                .iter()
+                .any(|taken| overlaps(&placement, taken, self.gap * 2))
+            {
                 continue;
             }
 
@@ -325,7 +335,11 @@ impl<'a> Search<'a> {
         let mut cards = Vec::new();
 
         for card in &layout.cards {
-            let offset = if align_right { layout.width - card.width } else { card.x };
+            let offset = if align_right {
+                layout.width - card.width
+            } else {
+                card.x
+            };
 
             cards.push(Card {
                 x: x + offset,
@@ -374,7 +388,10 @@ impl<'a> Search<'a> {
                 height: card.height as usize,
             };
 
-            total += self.request.analysis.score(area, self.request.text_luminance, text_only);
+            total += self
+                .request
+                .analysis
+                .score(area, self.request.text_luminance, text_only);
         }
 
         total / placement.cards.len().max(1) as f32

@@ -33,7 +33,9 @@ fn glide(name: &str, target: f32, start: impl FnOnce(f32) -> Glide) -> f32 {
             glides.insert(String::from(name), start(target));
         }
 
-        let glide = glides.get_mut(name).expect("failed to find the glide just added");
+        let glide = glides
+            .get_mut(name)
+            .expect("failed to find the glide just added");
 
         glide.to(target);
 

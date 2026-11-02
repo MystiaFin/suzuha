@@ -1,6 +1,6 @@
 use amane::{
-    Center, Color, Column, End, Padding, Rectangle, Row, SpaceBetween, Start, Text, Weight,
-    Widget, children,
+    Center, Color, Column, End, Padding, Rectangle, Row, SpaceBetween, Start, Text, Weight, Widget,
+    children,
 };
 
 use crate::fonts;
@@ -25,7 +25,12 @@ pub fn background(theme: &Theme, width: f32, height: f32) -> Rectangle {
         .width(width)
         .height(height)
         .radius(RADIUS)
-        .fill(Color::rgba(surface.red(), surface.green(), surface.blue(), SURFACE_ALPHA))
+        .fill(Color::rgba(
+            surface.red(),
+            surface.green(),
+            surface.blue(),
+            SURFACE_ALPHA,
+        ))
         .padding(Padding {
             top: PADDING,
             right: PADDING,
@@ -87,10 +92,12 @@ pub fn view(theme: &Theme, reading: Reading) -> Rectangle {
 
     let rows: Vec<Box<dyn Widget>> = vec![Box::new(label), Box::new(middle), Box::new(bar)];
 
-    background(theme, WIDTH, HEIGHT).align_child(Start, End).child(
-        Column::new(rows)
-            .width(inner_width)
-            .height(HEIGHT - PADDING * 2.0)
-            .justify(SpaceBetween),
-    )
+    background(theme, WIDTH, HEIGHT)
+        .align_child(Start, End)
+        .child(
+            Column::new(rows)
+                .width(inner_width)
+                .height(HEIGHT - PADDING * 2.0)
+                .justify(SpaceBetween),
+        )
 }

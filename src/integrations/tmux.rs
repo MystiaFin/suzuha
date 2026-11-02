@@ -31,9 +31,8 @@ pub fn export(theme: &Theme) {
 
     let plain = "nobold,noitalics,nounderscore";
 
-    let status_left = format!(
-        "#[fg={on_accent},bg={accent},bold] #S #[fg={accent},bg={bar},{plain}]{RIGHT}"
-    );
+    let status_left =
+        format!("#[fg={on_accent},bg={accent},bold] #S #[fg={accent},bg={bar},{plain}]{RIGHT}");
 
     let status_right = format!(
         "#[fg={segment},bg={bar},{plain}]{LEFT}#[fg={text},bg={segment}] %Y-%m-%d \

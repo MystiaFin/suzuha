@@ -48,8 +48,16 @@ impl Analysis {
                 luminance[index] = value;
                 squared[index] = value * value;
 
-                let left = if x > 0 { (value - luminance[index - 1]).abs() } else { 0.0 };
-                let above = if y > 0 { (value - luminance[index - width]).abs() } else { 0.0 };
+                let left = if x > 0 {
+                    (value - luminance[index - 1]).abs()
+                } else {
+                    0.0
+                };
+                let above = if y > 0 {
+                    (value - luminance[index - width]).abs()
+                } else {
+                    0.0
+                };
 
                 detail[index] = left + above;
             }
@@ -92,7 +100,8 @@ impl Analysis {
         let right = area.x + area.width;
         let bottom = area.y + area.height;
 
-        table[bottom * stride + right] - table[area.y * stride + right]
+        table[bottom * stride + right]
+            - table[area.y * stride + right]
             - table[bottom * stride + area.x]
             + table[area.y * stride + area.x]
     }
@@ -130,7 +139,13 @@ mod tests {
 
         for _ in 0..height {
             for x in 0..width {
-                let value = if x < 4 { 128 } else if x % 2 == 0 { 0 } else { 255 };
+                let value = if x < 4 {
+                    128
+                } else if x % 2 == 0 {
+                    0
+                } else {
+                    255
+                };
 
                 rgb.extend([value, value, value]);
             }
@@ -138,8 +153,18 @@ mod tests {
 
         let analysis = Analysis::new(&rgb, width, height).expect("failed to analyse");
 
-        let calm = Area { x: 0, y: 0, width: 4, height: 4 };
-        let busy = Area { x: 4, y: 0, width: 4, height: 4 };
+        let calm = Area {
+            x: 0,
+            y: 0,
+            width: 4,
+            height: 4,
+        };
+        let busy = Area {
+            x: 4,
+            y: 0,
+            width: 4,
+            height: 4,
+        };
 
         assert!(analysis.score(calm, 1.0, false) > analysis.score(busy, 1.0, false));
 

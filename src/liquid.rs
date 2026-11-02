@@ -65,7 +65,10 @@ impl Blob {
  * placed in screen coordinates
  */
 pub fn view(color: Color, blobs: Vec<Blob>, placement: Placement) -> Stack {
-    assert!(blobs.len() <= MAX_BLOBS, "the liquid holds at most {MAX_BLOBS} blobs");
+    assert!(
+        blobs.len() <= MAX_BLOBS,
+        "the liquid holds at most {MAX_BLOBS} blobs"
+    );
 
     let surface = Rectangle::new()
         .width(Parent)

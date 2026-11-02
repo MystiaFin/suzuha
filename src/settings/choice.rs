@@ -46,12 +46,23 @@ pub fn add(
 
     let top = page.y;
 
-    let row = row::view(theme, page.width, row::HEIGHT, title, detail, selector, WIDTH);
+    let row = row::view(
+        theme,
+        page.width,
+        row::HEIGHT,
+        title,
+        detail,
+        selector,
+        WIDTH,
+    );
 
     page.row(row::HEIGHT, row);
 
     // the menu fades out after closing, so it stays until it is gone
-    let amount = motion::fade(&format!("settings-menu:{key}"), if open { 1.0 } else { 0.0 });
+    let amount = motion::fade(
+        &format!("settings-menu:{key}"),
+        if open { 1.0 } else { 0.0 },
+    );
 
     if amount < 0.01 {
         return;
@@ -65,7 +76,9 @@ pub fn add(
     let height = options.len() as f32 * row::CONTROL_HEIGHT + MENU_PADDING * 2.0;
 
     page.menu(
-        menu.opacity(amount).scale(0.97 + 0.03 * amount).translate(x, y),
+        menu.opacity(amount)
+            .scale(0.97 + 0.03 * amount)
+            .translate(x, y),
         y + height,
     );
 }
@@ -81,7 +94,11 @@ fn selector(page: &Page, key: &'static str, label: &str, open: bool) -> Rectangl
             .font(fonts::BODY)
             .weight(Weight::SemiBold)
             .color(theme.accent),
-        Text::new(chevron).size(14.0).font(fonts::NERD).tight().color(theme.secondary_text),
+        Text::new(chevron)
+            .size(14.0)
+            .font(fonts::NERD)
+            .tight()
+            .color(theme.secondary_text),
     ])
     .width(WIDTH - 16.0 - 12.0)
     .justify(SpaceBetween)
@@ -152,12 +169,20 @@ fn menu(
         };
 
         let mut content: Vec<Box<dyn Widget>> = vec![Box::new(
-            Text::new(*label).size(13.0).font(fonts::BODY).weight(weight).color(color),
+            Text::new(*label)
+                .size(13.0)
+                .font(fonts::BODY)
+                .weight(weight)
+                .color(color),
         )];
 
         if selected {
             content.push(Box::new(
-                Text::new(CHECK).size(13.0).font(fonts::NERD).tight().color(theme.accent),
+                Text::new(CHECK)
+                    .size(13.0)
+                    .font(fonts::NERD)
+                    .tight()
+                    .color(theme.accent),
             ));
         }
 
@@ -213,7 +238,11 @@ fn menu(
 fn toggle(key: &'static str) {
     let mut shown = Shown::write();
 
-    shown.choice = if shown.choice == Some(key) { None } else { Some(key) };
+    shown.choice = if shown.choice == Some(key) {
+        None
+    } else {
+        Some(key)
+    };
 }
 
 fn pick(key: &'static str, value: &'static str) {

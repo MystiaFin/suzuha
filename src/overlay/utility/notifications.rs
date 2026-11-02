@@ -167,14 +167,21 @@ fn list(
 
         let leaving = overlay.dismissing.contains(&id);
 
-        let opacity = motion::fade(&format!("notification:{id}:opacity"), if leaving { 0.0 } else { 1.0 });
+        let opacity = motion::fade(
+            &format!("notification:{id}:opacity"),
+            if leaving { 0.0 } else { 1.0 },
+        );
 
         // the space only starts closing once the card has faded out
         let faded = leaving && opacity == 0.0;
 
         let open_target = if faded { 0.0 } else { 1.0 };
 
-        let open = motion::follow(&format!("notification:{id}:open"), open_target, FAST_SPATIAL);
+        let open = motion::follow(
+            &format!("notification:{id}:open"),
+            open_target,
+            FAST_SPATIAL,
+        );
 
         let gap = GAP * open_above.min(1.0);
 
@@ -342,12 +349,20 @@ fn text_column(
     for (text, height) in parts {
         total += height;
 
-        rows.push(Box::new(Rectangle::new().width(width).height(height).child(text)));
+        rows.push(Box::new(
+            Rectangle::new().width(width).height(height).child(text),
+        ));
     }
 
     total += style.text_gap * (rows.len() - 1) as f32;
 
-    (Column::new(rows).width(width).height(total).gap(style.text_gap), total)
+    (
+        Column::new(rows)
+            .width(width)
+            .height(total)
+            .gap(style.text_gap),
+        total,
+    )
 }
 
 fn fitted(text: Text, width: f32) -> (Text, f32) {
@@ -584,7 +599,9 @@ fn dismiss(id: u32) {
 
         Notifications::dismiss(id);
 
-        Overlay::write().dismissing.retain(|dismissed| *dismissed != id);
+        Overlay::write()
+            .dismissing
+            .retain(|dismissed| *dismissed != id);
     });
 }
 
@@ -629,4 +646,3 @@ mod tests {
         assert_eq!(decode_url("/100%.png"), "/100%.png");
     }
 }
-

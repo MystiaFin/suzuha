@@ -35,7 +35,15 @@ pub fn view(page: &Page, title: &str, detail: &str, input: TextInput) -> Rectang
         .align_child(Start, amane::Center)
         .child(input);
 
-    row::view(page.theme, page.width, row::TALL_HEIGHT, title, detail, field, width)
+    row::view(
+        page.theme,
+        page.width,
+        row::TALL_HEIGHT,
+        title,
+        detail,
+        field,
+        width,
+    )
 }
 
 // every setting that is typed, which the fields are named after

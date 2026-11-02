@@ -63,7 +63,10 @@ fn download(url: &str, cached: &Path) {
 
     let file = cached.display();
 
-    let folder = cached.parent().expect("failed to find the art folder").display();
+    let folder = cached
+        .parent()
+        .expect("failed to find the art folder")
+        .display();
 
     // ponytail: the cache is never cleaned, prune it if it grows
     amane::spawn(&format!(

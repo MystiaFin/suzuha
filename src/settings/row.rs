@@ -24,9 +24,12 @@ pub fn view(
 ) -> Rectangle {
     let labels_width = width - SIDE * 3.0 - control_width;
 
-    let row = Row::new(children![labels(theme, title, detail, labels_width), control])
-        .gap(SIDE)
-        .align(Center);
+    let row = Row::new(children![
+        labels(theme, title, detail, labels_width),
+        control
+    ])
+    .gap(SIDE)
+    .align(Center);
 
     Rectangle::new()
         .width(width)

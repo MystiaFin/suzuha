@@ -33,5 +33,9 @@ pub fn view(theme: &Theme, width: f32) -> Row {
         bars.push(Box::new(bar));
     }
 
-    Row::new(bars).width(width).height(HEIGHT).gap(GAP).align(End)
+    Row::new(bars)
+        .width(width)
+        .height(HEIGHT)
+        .gap(GAP)
+        .align(End)
 }

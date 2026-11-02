@@ -13,7 +13,11 @@ const WARNING_ICON: &str = "󰀪";
 // the window dimmed behind a card that asks before something risky is staged
 pub fn view(theme: &Theme, confirm: &Confirm) -> Rectangle {
     let card = match confirm {
-        Confirm::Integration { key, title, warning } => integration(theme, key, title, warning),
+        Confirm::Integration {
+            key,
+            title,
+            warning,
+        } => integration(theme, key, title, warning),
         Confirm::Reset => reset(theme),
     };
 
@@ -34,11 +38,20 @@ fn integration(theme: &Theme, key: &'static str, title: &str, warning: &str) -> 
         .radius(12.0)
         .fill(theme.selected_surface)
         .align_child(Center, Center)
-        .child(Text::new(WARNING_ICON).size(20.0).font(fonts::NERD).tight().color(theme.danger));
+        .child(
+            Text::new(WARNING_ICON)
+                .size(20.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.danger),
+        );
 
-    let heading = Row::new(children![icon, title_text(theme, &format!("Enable {title} integration?"))])
-        .gap(12.0)
-        .align(Center);
+    let heading = Row::new(children![
+        icon,
+        title_text(theme, &format!("Enable {title} integration?"))
+    ])
+    .gap(12.0)
+    .align(Center);
 
     let continue_button = button::view(theme, "Continue", Style::Danger, true, move || {
         Settings::stage(key, true);
@@ -115,7 +128,13 @@ fn body(text: &str, color: amane::Color, size: f32, width: f32) -> Rectangle {
     Rectangle::new()
         .width(width - 44.0)
         .height(size * 4.5)
-        .child(Text::new(text).size(size).font(fonts::BODY).color(color).wrap())
+        .child(
+            Text::new(text)
+                .size(size)
+                .font(fonts::BODY)
+                .color(color)
+                .wrap(),
+        )
 }
 
 // cancel and the risky one, on the right

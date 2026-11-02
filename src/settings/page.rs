@@ -108,7 +108,8 @@ impl<'a> Page<'a> {
 
         let height = self.y.max(self.bottom);
 
-        let mut layers: Vec<Box<dyn Widget>> = vec![Box::new(Column::new(self.cards).gap(GROUP_GAP))];
+        let mut layers: Vec<Box<dyn Widget>> =
+            vec![Box::new(Column::new(self.cards).gap(GROUP_GAP))];
 
         layers.append(&mut self.menus);
 

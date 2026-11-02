@@ -95,7 +95,13 @@ pub fn view(overlay: &Overlay, theme: &Theme, width: f32, height: f32) -> Stack 
 
     if several {
         layers.push(Box::new(arrow(overlay, theme, height, -1, ARROW_INSET)));
-        layers.push(Box::new(arrow(overlay, theme, height, 1, width - ARROW_INSET - ARROW_WIDTH)));
+        layers.push(Box::new(arrow(
+            overlay,
+            theme,
+            height,
+            1,
+            width - ARROW_INSET - ARROW_WIDTH,
+        )));
     }
 
     Stack::new(layers).width(width).height(height)
@@ -125,7 +131,13 @@ fn arrow(overlay: &Overlay, theme: &Theme, height: f32, direction: i32, x: f32) 
         .on_hover(move |inside| hover(hover_name.clone(), inside))
         .on_click(move |_| player::switch(direction))
         .align_child(Center, Center)
-        .child(Text::new(icon).size(16.0).font(fonts::NERD).tight().color(theme.text))
+        .child(
+            Text::new(icon)
+                .size(16.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.text),
+        )
 }
 
 // a music note stands in until the cover is on disk and decoded
@@ -147,8 +159,13 @@ fn cover(player: Option<&MediaPlayer>, theme: &Theme, size: f32) -> Rectangle {
         }
     }
 
-    slot.align_child(Center, Center)
-        .child(Text::new(EMPTY_ICON).size(52.0).font(fonts::NERD).tight().color(theme.muted_text))
+    slot.align_child(Center, Center).child(
+        Text::new(EMPTY_ICON)
+            .size(52.0)
+            .font(fonts::NERD)
+            .tight()
+            .color(theme.muted_text),
+    )
 }
 
 fn details(
@@ -164,7 +181,14 @@ fn details(
     };
 
     let title = line(title, width, TITLE_HEIGHT, 17.0, Weight::Bold, theme.text);
-    let artist = line(artist, width, ARTIST_HEIGHT, 13.0, Weight::Regular, theme.muted_text);
+    let artist = line(
+        artist,
+        width,
+        ARTIST_HEIGHT,
+        13.0,
+        Weight::Regular,
+        theme.muted_text,
+    );
 
     let fixed = TITLE_HEIGHT
         + ARTIST_HEIGHT
@@ -173,7 +197,9 @@ fn details(
         + CONTROLS_HEIGHT
         + LINE_GAP * 5.0;
 
-    let space = Rectangle::new().width(width).height((height - fixed).max(0.0));
+    let space = Rectangle::new()
+        .width(width)
+        .height((height - fixed).max(0.0));
 
     Column::new(children![
         title,
@@ -187,12 +213,26 @@ fn details(
 }
 
 // one line of text, cut off with an ellipsis when too long
-fn line(text: &str, width: f32, height: f32, size: f32, weight: Weight, color: amane::Color) -> Rectangle {
+fn line(
+    text: &str,
+    width: f32,
+    height: f32,
+    size: f32,
+    weight: Weight,
+    color: amane::Color,
+) -> Rectangle {
     Rectangle::new()
         .width(width)
         .height(height)
         .align_child(Start, Center)
-        .child(Text::new(text).size(size).font(fonts::BODY).weight(weight).color(color).elide())
+        .child(
+            Text::new(text)
+                .size(size)
+                .font(fonts::BODY)
+                .weight(weight)
+                .color(color)
+                .elide(),
+        )
 }
 
 fn progress(player: Option<&MediaPlayer>, theme: &Theme, width: f32) -> Row {
@@ -228,7 +268,12 @@ fn time(duration: Duration, theme: &Theme, side: impl Into<amane::Align>) -> Rec
         .width(TIME_WIDTH)
         .height(wave::HEIGHT)
         .align_child(side, Center)
-        .child(Text::new(text).size(10.0).font(fonts::BODY).color(theme.muted_text))
+        .child(
+            Text::new(text)
+                .size(10.0)
+                .font(fonts::BODY)
+                .color(theme.muted_text),
+        )
 }
 
 fn controls(overlay: &Overlay, player: Option<&MediaPlayer>, theme: &Theme, width: f32) -> Row {
@@ -240,9 +285,23 @@ fn controls(overlay: &Overlay, player: Option<&MediaPlayer>, theme: &Theme, widt
     let name = player.map_or("", MediaPlayer::name);
 
     let buttons: Vec<Box<dyn Widget>> = vec![
-        Box::new(button(overlay, theme, "media:previous", PREVIOUS_ICON, name, MediaPlayer::previous)),
+        Box::new(button(
+            overlay,
+            theme,
+            "media:previous",
+            PREVIOUS_ICON,
+            name,
+            MediaPlayer::previous,
+        )),
         Box::new(play_button(playing, theme, play_icon, name)),
-        Box::new(button(overlay, theme, "media:next", NEXT_ICON, name, MediaPlayer::next)),
+        Box::new(button(
+            overlay,
+            theme,
+            "media:next",
+            NEXT_ICON,
+            name,
+            MediaPlayer::next,
+        )),
     ];
 
     Row::new(buttons)
@@ -279,7 +338,13 @@ fn button(
         .on_hover(move |inside| hover(hover_name.clone(), inside))
         .on_click(move |_| player::control(&player_name, action))
         .align_child(Center, Center)
-        .child(Text::new(icon).size(18.0).font(fonts::NERD).tight().color(theme.text))
+        .child(
+            Text::new(icon)
+                .size(18.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.text),
+        )
 }
 
 // round while paused, and squares off a little while playing
@@ -298,5 +363,11 @@ fn play_button(playing: bool, theme: &Theme, icon: &str, player_name: &str) -> R
         .cursor(Pointer)
         .on_click(move |_| player::control(&player_name, MediaPlayer::play_pause))
         .align_child(Center, Center)
-        .child(Text::new(icon).size(21.0).font(fonts::NERD).tight().color(theme.on_accent))
+        .child(
+            Text::new(icon)
+                .size(21.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.on_accent),
+        )
 }

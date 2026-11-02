@@ -10,7 +10,13 @@ const OFFSET_REFRESH: u32 = 600;
 const SECONDS_PER_DAY: i64 = 24 * 60 * 60;
 
 const WEEKDAYS: [&str; 7] = [
-    "Thursday", "Friday", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
 ];
 
 const MONTHS: [&str; 12] = [

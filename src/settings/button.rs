@@ -42,7 +42,13 @@ pub fn view(
         .radius(12.0)
         .fill(fill)
         .align_child(Center, Center)
-        .child(Text::new(label).size(13.0).font(fonts::BODY).weight(Weight::SemiBold).color(text));
+        .child(
+            Text::new(label)
+                .size(13.0)
+                .font(fonts::BODY)
+                .weight(Weight::SemiBold)
+                .color(text),
+        );
 
     if !enabled {
         return button.opacity(0.42);

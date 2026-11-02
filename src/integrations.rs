@@ -108,7 +108,12 @@ fn fingerprint(theme: &Theme) -> String {
 
 // "#rrggbb", never with alpha
 pub fn hex(color: Color) -> String {
-    format!("#{:02x}{:02x}{:02x}", color.red(), color.green(), color.blue())
+    format!(
+        "#{:02x}{:02x}{:02x}",
+        color.red(),
+        color.green(),
+        color.blue()
+    )
 }
 
 pub fn home() -> String {

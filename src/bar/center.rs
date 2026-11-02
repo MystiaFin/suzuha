@@ -7,10 +7,10 @@ use amane::{
 
 use super::{pill, ring, timer};
 use crate::clock::Clock;
-use crate::settings::Settings;
 use crate::fonts;
 use crate::motion::{self, Spring};
 use crate::overlay::Overlay;
+use crate::settings::Settings;
 use crate::theme::Theme;
 
 const MEDIA_ICON: &str = "󰎈";
@@ -139,7 +139,13 @@ fn rings(theme: &Theme) -> Row {
         .width(RING_SIZE)
         .height(RING_SIZE)
         .on_scroll(scroll_volume)
-        .child(ring::view(RING_SIZE, RING_THICKNESS, speaker_value, speaker_color, theme.border));
+        .child(ring::view(
+            RING_SIZE,
+            RING_THICKNESS,
+            speaker_value,
+            speaker_color,
+            theme.border,
+        ));
 
     let microphone = Rectangle::new()
         .width(RING_SIZE)
@@ -153,7 +159,9 @@ fn rings(theme: &Theme) -> Row {
             theme.border,
         ));
 
-    Row::new(children![speaker, microphone]).gap(8.0).align(Center)
+    Row::new(children![speaker, microphone])
+        .gap(8.0)
+        .align(Center)
 }
 
 // the icon and "artist - title", or "No media" while nothing plays, and how wide they are

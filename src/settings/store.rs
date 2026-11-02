@@ -160,7 +160,9 @@ impl Service for Settings {
 impl Settings {
     // what the shell uses
     pub fn text(&self, key: &str) -> &str {
-        self.values.get(key).expect("failed to find setting: unknown key")
+        self.values
+            .get(key)
+            .expect("failed to find setting: unknown key")
     }
 
     pub fn flag(&self, key: &str) -> bool {
@@ -174,7 +176,9 @@ impl Settings {
 
     // what the settings window shows, applied or not
     pub fn staged(&self, key: &str) -> &str {
-        self.draft.get(key).expect("failed to find setting: unknown key")
+        self.draft
+            .get(key)
+            .expect("failed to find setting: unknown key")
     }
 
     pub fn staged_flag(&self, key: &str) -> bool {
@@ -194,7 +198,10 @@ impl Settings {
     pub fn stage(key: &str, value: impl ToString) {
         let mut settings = Self::write();
 
-        let slot = settings.draft.get_mut(key).expect("failed to find setting: unknown key");
+        let slot = settings
+            .draft
+            .get_mut(key)
+            .expect("failed to find setting: unknown key");
 
         *slot = value.to_string();
     }
@@ -210,7 +217,9 @@ impl Settings {
         let mut settings = Self::write();
 
         for (key, value) in DEFAULTS {
-            settings.draft.insert(String::from(key), String::from(value));
+            settings
+                .draft
+                .insert(String::from(key), String::from(value));
         }
     }
 

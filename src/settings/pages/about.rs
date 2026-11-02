@@ -18,9 +18,16 @@ pub fn build(page: &mut Page) {
 
     let detail = format!("Git commit {commit}");
 
-    action(page, "Config checkout", &detail, "Open folder", Style::Plain, || {
-        amane::spawn("xdg-open ~/.config/amane");
-    });
+    action(
+        page,
+        "Config checkout",
+        &detail,
+        "Open folder",
+        Style::Plain,
+        || {
+            amane::spawn("xdg-open ~/.config/amane");
+        },
+    );
 
     action(
         page,

@@ -1,6 +1,6 @@
 pub mod control_center;
-pub mod launcher;
 pub mod dismiss;
+pub mod launcher;
 mod panel;
 mod popups;
 pub mod power_menu;
@@ -181,6 +181,9 @@ fn empty(screen: Region) -> LayerWindow {
         .click_through()
         .child(Stack::new(children![
             liquid::view(Color::TRANSPARENT, Vec::new(), placement),
-            Rectangle::new().width(1.0).height(1.0).fill(Color::rgba(0, 0, 0, 1)),
+            Rectangle::new()
+                .width(1.0)
+                .height(1.0)
+                .fill(Color::rgba(0, 0, 0, 1)),
         ]))
 }

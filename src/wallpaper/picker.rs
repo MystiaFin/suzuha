@@ -2,8 +2,8 @@ mod card;
 mod state;
 
 use amane::{
-    Center, Color, Column, Full, Key, Keyboard, Layer, LayerWindow, Monitor, Parent,
-    Rectangle, Service, Stack, Text, Vertical, Widget, Zone, children,
+    Center, Color, Column, Full, Key, Keyboard, Layer, LayerWindow, Monitor, Parent, Rectangle,
+    Service, Stack, Text, Vertical, Widget, Zone, children,
 };
 
 use card::Place;
@@ -77,7 +77,12 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     let tint = Rectangle::new()
         .width(Parent)
         .height(Parent)
-        .fill(Color::rgba(surface.red(), surface.green(), surface.blue(), tint_alpha));
+        .fill(Color::rgba(
+            surface.red(),
+            surface.green(),
+            surface.blue(),
+            tint_alpha,
+        ));
 
     let content: Box<dyn Widget> = if picker.files.is_empty() {
         Box::new(empty(&theme))

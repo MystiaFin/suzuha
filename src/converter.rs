@@ -75,8 +75,16 @@ struct Words {
     finished: &'static str,
 }
 
-const CONVERT_WORDS: Words = Words { action: "Convert", working: "Converting", finished: "converted" };
-const COMPRESS_WORDS: Words = Words { action: "Compress", working: "Compressing", finished: "compressed" };
+const CONVERT_WORDS: Words = Words {
+    action: "Convert",
+    working: "Converting",
+    finished: "converted",
+};
+const COMPRESS_WORDS: Words = Words {
+    action: "Compress",
+    working: "Compressing",
+    finished: "compressed",
+};
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum Status {
@@ -149,7 +157,11 @@ fn add(paths: Vec<PathBuf>) {
             continue;
         }
 
-        queue.files.push(File { path, status: Status::Waiting, progress: None });
+        queue.files.push(File {
+            path,
+            status: Status::Waiting,
+            progress: None,
+        });
     }
 }
 
@@ -157,7 +169,9 @@ fn add(paths: Vec<PathBuf>) {
 fn clear() {
     let mut queue = Queue::write();
 
-    queue.files.retain(|file| matches!(file.status, Status::Waiting | Status::Converting));
+    queue
+        .files
+        .retain(|file| matches!(file.status, Status::Waiting | Status::Converting));
 
     // nothing is converting while stopped, so everything goes
     if !queue.running {
@@ -276,7 +290,13 @@ fn header(theme: &Theme, width: f32) -> Row {
         .radius(12.0)
         .fill(theme.selected_surface)
         .align_child(Center, Center)
-        .child(Text::new(CONVERTER_ICON).size(21.0).font(fonts::NERD).tight().color(theme.accent));
+        .child(
+            Text::new(CONVERTER_ICON)
+                .size(21.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.accent),
+        );
 
     let title = Text::new("Converter")
         .size(21.0)
@@ -299,13 +319,22 @@ fn header(theme: &Theme, width: f32) -> Row {
         .on_hover(|inside| hover(String::from("close"), inside))
         .on_click(|_| close())
         .align_child(Center, Center)
-        .child(Text::new(CLOSE_ICON).size(18.0).font(fonts::NERD).tight().color(theme.secondary_text));
+        .child(
+            Text::new(CLOSE_ICON)
+                .size(18.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.secondary_text),
+        );
 
-    Row::new(children![Row::new(children![icon, title]).gap(12.0).align(Center), close])
-        .width(width)
-        .height(40.0)
-        .justify(SpaceBetween)
-        .align(Center)
+    Row::new(children![
+        Row::new(children![icon, title]).gap(12.0).align(Center),
+        close
+    ])
+    .width(width)
+    .height(40.0)
+    .justify(SpaceBetween)
+    .align(Center)
 }
 
 // a pill that slides under the open page's label
@@ -327,7 +356,10 @@ fn tabs(theme: &Theme, width: f32) -> Stack {
 
         let hover_name = format!("tab:{label}");
 
-        let amount = motion::fade(&format!("converter-{hover_name}"), if selected { 1.0 } else { 0.0 });
+        let amount = motion::fade(
+            &format!("converter-{hover_name}"),
+            if selected { 1.0 } else { 0.0 },
+        );
 
         let color = theme::mix(theme.secondary_text, theme.on_accent, amount);
 
@@ -338,8 +370,16 @@ fn tabs(theme: &Theme, width: f32) -> Stack {
         };
 
         let content = Row::new(children![
-            Text::new(icon).size(16.0).font(fonts::NERD).tight().color(color),
-            Text::new(label).size(14.0).font(fonts::BODY).weight(Weight::SemiBold).color(color),
+            Text::new(icon)
+                .size(16.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(color),
+            Text::new(label)
+                .size(14.0)
+                .font(fonts::BODY)
+                .weight(Weight::SemiBold)
+                .color(color),
         ])
         .gap(8.0)
         .align(Center);
@@ -358,9 +398,17 @@ fn tabs(theme: &Theme, width: f32) -> Stack {
         ));
     }
 
-    let x = motion::follow("converter-tab", open_index as f32 * tab_width, motion::DEFAULT_SPATIAL);
+    let x = motion::follow(
+        "converter-tab",
+        open_index as f32 * tab_width,
+        motion::DEFAULT_SPATIAL,
+    );
 
-    let track = Rectangle::new().width(width).height(TABS_HEIGHT).radius(Full).fill(theme.surface);
+    let track = Rectangle::new()
+        .width(width)
+        .height(TABS_HEIGHT)
+        .radius(Full)
+        .fill(theme.surface);
 
     let indicator = Rectangle::new()
         .width(tab_width)
@@ -375,7 +423,9 @@ fn tabs(theme: &Theme, width: f32) -> Stack {
         .padding(4.0)
         .child(Row::new(labels));
 
-    Stack::new(children![track, indicator, labels]).width(width).height(TABS_HEIGHT)
+    Stack::new(children![track, indicator, labels])
+        .width(width)
+        .height(TABS_HEIGHT)
 }
 
 // takes files dropped from a file manager, and lists them once there are some
@@ -391,8 +441,15 @@ fn drop_zone(theme: &Theme, width: f32, height: f32) -> Rectangle {
 
     if queue.files.is_empty() {
         let hint = Column::new(children![
-            Text::new(DROP_ICON).size(40.0).font(fonts::NERD).tight().color(theme.muted_text),
-            Text::new("Drop files here").size(14.0).font(fonts::BODY).color(theme.secondary_text),
+            Text::new(DROP_ICON)
+                .size(40.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.muted_text),
+            Text::new("Drop files here")
+                .size(14.0)
+                .font(fonts::BODY)
+                .color(theme.secondary_text),
         ])
         .gap(10.0)
         .align(Center);
@@ -422,7 +479,13 @@ fn file_row(theme: &Theme, file: &File, width: f32) -> Row {
         .width(width - 110.0)
         .height(28.0)
         .align_child(Start, Center)
-        .child(Text::new(name).size(13.0).font(fonts::BODY).color(theme.text).elide());
+        .child(
+            Text::new(name)
+                .size(13.0)
+                .font(fonts::BODY)
+                .color(theme.text)
+                .elide(),
+        );
 
     let (label, color) = match file.status {
         Status::Waiting => ("Waiting", theme.muted_text),
@@ -436,7 +499,11 @@ fn file_row(theme: &Theme, file: &File, width: f32) -> Row {
         }
     };
 
-    let status = Text::new(label).size(12.0).font(fonts::BODY).weight(Weight::SemiBold).color(color);
+    let status = Text::new(label)
+        .size(12.0)
+        .font(fonts::BODY)
+        .weight(Weight::SemiBold)
+        .color(color);
 
     Row::new(children![name, status])
         .width(width)
@@ -459,7 +526,13 @@ fn progress(theme: &Theme, progress: Option<f32>) -> Row {
 
         let sweep = (millis % SWEEP_MS) as f32 / SWEEP_MS as f32;
 
-        return Row::new(children![wave::view(PROGRESS_WIDTH, sweep, true, theme.accent, theme.border)]);
+        return Row::new(children![wave::view(
+            PROGRESS_WIDTH,
+            sweep,
+            true,
+            theme.accent,
+            theme.border
+        )]);
     };
 
     let percent = Text::new(format!("{:.0}%", progress * 100.0))
@@ -468,15 +541,21 @@ fn progress(theme: &Theme, progress: Option<f32>) -> Row {
         .weight(Weight::SemiBold)
         .color(theme.accent);
 
-    Row::new(children![wave::view(PROGRESS_WIDTH, progress, true, theme.accent, theme.border), percent])
-        .gap(8.0)
-        .align(Center)
+    Row::new(children![
+        wave::view(PROGRESS_WIDTH, progress, true, theme.accent, theme.border),
+        percent
+    ])
+    .gap(8.0)
+    .align(Center)
 }
 
 fn format_row(theme: &Theme, group: Group, label: &str) -> Row {
     let chosen = Queue::read().format.extension;
 
-    let formats: Vec<&'static Format> = FORMATS.iter().filter(|format| format.group == group).collect();
+    let formats: Vec<&'static Format> = FORMATS
+        .iter()
+        .filter(|format| format.group == group)
+        .collect();
 
     let mut chips: Vec<Box<dyn Widget>> = Vec::new();
 
@@ -487,9 +566,14 @@ fn format_row(theme: &Theme, group: Group, label: &str) -> Row {
 
         let ends = (index == 0, index == formats.len() - 1);
 
-        chips.push(Box::new(toggle(theme, name, &format.extension.to_uppercase(), selected, ends, move || {
-            Queue::write().format = format
-        })));
+        chips.push(Box::new(toggle(
+            theme,
+            name,
+            &format.extension.to_uppercase(),
+            selected,
+            ends,
+            move || Queue::write().format = format,
+        )));
     }
 
     option_row(theme, label, chips)
@@ -498,7 +582,10 @@ fn format_row(theme: &Theme, group: Group, label: &str) -> Row {
 fn document_row(theme: &Theme, kind: Kind, label: &str) -> Row {
     let chosen = Queue::read().document.extension;
 
-    let documents: Vec<&'static Document> = DOCUMENTS.iter().filter(|document| document.kind == kind).collect();
+    let documents: Vec<&'static Document> = DOCUMENTS
+        .iter()
+        .filter(|document| document.kind == kind)
+        .collect();
 
     let mut chips: Vec<Box<dyn Widget>> = Vec::new();
 
@@ -509,9 +596,14 @@ fn document_row(theme: &Theme, kind: Kind, label: &str) -> Row {
 
         let ends = (index == 0, index == documents.len() - 1);
 
-        chips.push(Box::new(toggle(theme, name, &document.extension.to_uppercase(), selected, ends, move || {
-            Queue::write().document = document
-        })));
+        chips.push(Box::new(toggle(
+            theme,
+            name,
+            &document.extension.to_uppercase(),
+            selected,
+            ends,
+            move || Queue::write().document = document,
+        )));
     }
 
     option_row(theme, label, chips)
@@ -527,7 +619,14 @@ fn level_row(theme: &Theme) -> Row {
 
         let ends = (index == 0, index == LEVELS.len() - 1);
 
-        buttons.push(Box::new(toggle(theme, name, label, level == chosen, ends, move || Queue::write().level = level)));
+        buttons.push(Box::new(toggle(
+            theme,
+            name,
+            label,
+            level == chosen,
+            ends,
+            move || Queue::write().level = level,
+        )));
     }
 
     option_row(theme, "Strength", buttons)
@@ -543,7 +642,14 @@ fn speed_row(theme: &Theme) -> Row {
 
         let ends = (index == 0, index == SPEEDS.len() - 1);
 
-        buttons.push(Box::new(toggle(theme, name, label, speed == chosen, ends, move || Queue::write().speed = speed)));
+        buttons.push(Box::new(toggle(
+            theme,
+            name,
+            label,
+            speed == chosen,
+            ends,
+            move || Queue::write().speed = speed,
+        )));
     }
 
     option_row(theme, "Speed", buttons)
@@ -554,7 +660,12 @@ fn option_row(theme: &Theme, label: &str, buttons: Vec<Box<dyn Widget>>) -> Row 
         .width(64.0)
         .height(CONTROL_HEIGHT)
         .align_child(Start, Center)
-        .child(Text::new(label).size(12.0).font(fonts::BODY).color(theme.muted_text));
+        .child(
+            Text::new(label)
+                .size(12.0)
+                .font(fonts::BODY)
+                .color(theme.muted_text),
+        );
 
     Row::new(children![label, Row::new(buttons).gap(TOGGLE_GAP)]).align(Center)
 }
@@ -571,7 +682,10 @@ fn toggle(
     (first, last): (bool, bool),
     on_click: impl Fn() + 'static,
 ) -> Rectangle {
-    let amount = motion::fade(&format!("converter-{name}"), if selected { 1.0 } else { 0.0 });
+    let amount = motion::fade(
+        &format!("converter-{name}"),
+        if selected { 1.0 } else { 0.0 },
+    );
 
     let resting = if hovered(&name) {
         theme.hover_surface
@@ -601,7 +715,13 @@ fn toggle(
         .on_hover(move |inside| hover(name.clone(), inside))
         .on_click(move |_| on_click())
         .align_child(Center, Center)
-        .child(Text::new(label).size(12.0).font(fonts::BODY).weight(Weight::SemiBold).color(text))
+        .child(
+            Text::new(label)
+                .size(12.0)
+                .font(fonts::BODY)
+                .weight(Weight::SemiBold)
+                .color(text),
+        )
 }
 
 fn words(task: Task) -> Words {
@@ -648,7 +768,10 @@ fn footer(theme: &Theme, width: f32) -> Row {
         summary.push_str(&format!(", {failed} failed"));
     }
 
-    let summary = Text::new(summary).size(12.0).font(fonts::BODY).color(theme.muted_text);
+    let summary = Text::new(summary)
+        .size(12.0)
+        .font(fonts::BODY)
+        .color(theme.muted_text);
 
     let start_label = if running { words.working } else { words.action };
 
@@ -665,7 +788,13 @@ fn footer(theme: &Theme, width: f32) -> Row {
         .align(Center)
 }
 
-fn button(theme: &Theme, label: &'static str, primary: bool, enabled: bool, on_click: fn()) -> Rectangle {
+fn button(
+    theme: &Theme,
+    label: &'static str,
+    primary: bool,
+    enabled: bool,
+    on_click: fn(),
+) -> Rectangle {
     let hover_name = format!("button:{label}");
 
     let (fill, text) = if primary {
@@ -686,7 +815,13 @@ fn button(theme: &Theme, label: &'static str, primary: bool, enabled: bool, on_c
         .radius(Full)
         .fill(fill)
         .align_child(Center, Center)
-        .child(Text::new(label).size(13.0).font(fonts::BODY).weight(Weight::SemiBold).color(text));
+        .child(
+            Text::new(label)
+                .size(13.0)
+                .font(fonts::BODY)
+                .weight(Weight::SemiBold)
+                .color(text),
+        );
 
     if !enabled {
         return button.opacity(0.42);

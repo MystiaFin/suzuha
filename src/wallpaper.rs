@@ -104,5 +104,9 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         .space(Zone::Ignore)
         .namespace("wallpaper")
         .click_through()
-        .child(Stack::new(children![backdrop, frame, shadow, dim]).width(Parent).height(Parent))
+        .child(
+            Stack::new(children![backdrop, frame, shadow, dim])
+                .width(Parent)
+                .height(Parent),
+        )
 }

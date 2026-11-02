@@ -1,6 +1,6 @@
 mod hsl;
-pub mod oklch;
 mod mode;
+pub mod oklch;
 mod scheme;
 
 use amane::{Color, Palette, Service};
@@ -109,8 +109,16 @@ pub fn for_mode(forced: Option<bool>) -> Theme {
     let hover_surface = mix(surface, accent, pick(light, 0.12, 0.20));
     let selected_surface = mix(surface, accent, pick(light, 0.20, 0.15));
 
-    let success = tone(mix(SUCCESS_SEED, accent, 0.20), pick(light, 0.42, 0.70), 0.48);
-    let danger = tone(mix(DANGER_SEED, accent, 0.20), pick(light, 0.42, 0.70), 0.48);
+    let success = tone(
+        mix(SUCCESS_SEED, accent, 0.20),
+        pick(light, 0.42, 0.70),
+        0.48,
+    );
+    let danger = tone(
+        mix(DANGER_SEED, accent, 0.20),
+        pick(light, 0.42, 0.70),
+        0.48,
+    );
 
     // on a light theme the bar's accent pill is darkened so its text stays readable
     let accent = if light {
@@ -228,7 +236,10 @@ mod tests {
 
         let half = mix(Color::TRANSPARENT, border, 0.5);
 
-        assert_eq!((half.red(), half.green(), half.blue(), half.alpha()), (200, 100, 50, 128));
+        assert_eq!(
+            (half.red(), half.green(), half.blue(), half.alpha()),
+            (200, 100, 50, 128)
+        );
 
         assert_eq!(mix(Color::BLACK, Color::WHITE, 0.5).red(), 128);
     }

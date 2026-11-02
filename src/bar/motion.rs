@@ -29,12 +29,14 @@ thread_local! {
 // the highlight's x offset and the star's rotation in degrees, for one monitor's strip
 pub fn highlight(monitor: &str, active: usize, step: f32) -> (f32, f32) {
     MOTIONS.with_borrow_mut(|motions| {
-        let motion = motions.entry(String::from(monitor)).or_insert_with(|| Motion {
-            active,
-            position: animation(active as f32 * step),
-            rotation: animation(0.0),
-            turned: 0.0,
-        });
+        let motion = motions
+            .entry(String::from(monitor))
+            .or_insert_with(|| Motion {
+                active,
+                position: animation(active as f32 * step),
+                rotation: animation(0.0),
+                turned: 0.0,
+            });
 
         if active != motion.active {
             // the star turns half a turn, the way the highlight moves

@@ -1,6 +1,4 @@
-use amane::{
-    Center, End, Full, Point, Pointer, Rectangle, Row, Service, Stack, Text, children,
-};
+use amane::{Center, End, Full, Point, Pointer, Rectangle, Row, Service, Stack, Text, children};
 
 use super::page::Page;
 use super::{Settings, row};
@@ -44,7 +42,15 @@ pub fn add(page: &mut Page, key: &'static str, title: &str, detail: &str, range:
 
     let width = TRACK_WIDTH + VALUE_GAP + VALUE_WIDTH;
 
-    let row = row::view(theme, page.width, row::TALL_HEIGHT, title, detail, control, width);
+    let row = row::view(
+        theme,
+        page.width,
+        row::TALL_HEIGHT,
+        title,
+        detail,
+        control,
+        width,
+    );
 
     page.row(row::TALL_HEIGHT, row);
 }

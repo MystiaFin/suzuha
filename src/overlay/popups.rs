@@ -168,7 +168,8 @@ impl Popups {
             amane::request_frame();
         }
 
-        self.list.retain(|popup| !popup.leaving || popup.slide.value() < 1.0);
+        self.list
+            .retain(|popup| !popup.leaving || popup.slide.value() < 1.0);
 
         // nothing pops up while the panel with every notification is open
         for id in listed {
@@ -210,7 +211,9 @@ impl Popups {
 
         let wanted_height = PADDING.top + cards_height + PADDING.bottom;
 
-        let spring = self.height.get_or_insert_with(|| motion::size(wanted_height));
+        let spring = self
+            .height
+            .get_or_insert_with(|| motion::size(wanted_height));
 
         spring.to(wanted_height);
 
@@ -286,7 +289,8 @@ impl Popups {
 
             let offset = popup.slide.value();
 
-            let from_bottom = motion::follow(&format!("popup:{}", popup.id), total, DEFAULT_SPATIAL);
+            let from_bottom =
+                motion::follow(&format!("popup:{}", popup.id), total, DEFAULT_SPATIAL);
 
             if offset > 0.0 || from_bottom != total {
                 moving = true;
@@ -335,7 +339,10 @@ pub fn view(overlay: &Overlay, theme: &Theme, screen: Region) -> Option<PanelVie
 }
 
 fn find(notifications: &Notifications, id: u32) -> Option<&Notification> {
-    notifications.list().iter().find(|notification| notification.id() == id)
+    notifications
+        .list()
+        .iter()
+        .find(|notification| notification.id() == id)
 }
 
 // the cards hang from the bottom of the stack, and only get clipped while they move
@@ -383,5 +390,8 @@ fn countdown(theme: &Theme, popup: &Popup, card_height: f32) -> Rectangle {
         .height(COUNTDOWN_HEIGHT)
         .radius(COUNTDOWN_HEIGHT / 2.0)
         .fill(theme.accent)
-        .translate(COUNTDOWN_INSET, card_height - COUNTDOWN_BOTTOM - COUNTDOWN_HEIGHT)
+        .translate(
+            COUNTDOWN_INSET,
+            card_height - COUNTDOWN_BOTTOM - COUNTDOWN_HEIGHT,
+        )
 }

@@ -42,12 +42,15 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
         .fill(Color::rgba(0, 0, 0, DIM));
 
     // the compositor sizes lock screens to the monitor, so the window's own size is never used
-    LayerWindow::new().width(1.0).height(1.0).child(Stack::new(children![
-        background,
-        dim,
-        clock(width, height),
-        unlock(width, height),
-    ]))
+    LayerWindow::new()
+        .width(1.0)
+        .height(1.0)
+        .child(Stack::new(children![
+            background,
+            dim,
+            clock(width, height),
+            unlock(width, height),
+        ]))
 }
 
 // the time, big, with the date under it
@@ -112,7 +115,9 @@ fn unlock(width: f32, height: f32) -> Stack {
         .align_child(Center, Center)
         .child(hint);
 
-    Stack::new(children![block, hint]).width(width).height(height)
+    Stack::new(children![block, hint])
+        .width(width)
+        .height(height)
 }
 
 // locks the session, the same as `loginctl lock-session`

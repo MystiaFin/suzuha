@@ -8,7 +8,9 @@ mod switch;
 mod tabs;
 mod wifi;
 
-use amane::{Bluetooth, Column, Key, Network, Padding, Rectangle, Service, Stack, Widget, children};
+use amane::{
+    Bluetooth, Column, Key, Network, Padding, Rectangle, Service, Stack, Widget, children,
+};
 
 use super::{Overlay, PanelView, Region};
 use crate::liquid::{self, Blob};
@@ -124,7 +126,12 @@ fn pages(overlay: &Overlay, theme: &Theme, height: f32) -> Rectangle {
 
     let mut layers: Vec<Box<dyn Widget>> = Vec::new();
 
-    for page in [Page::Notifications, Page::Wifi, Page::Bluetooth, Page::Record] {
+    for page in [
+        Page::Notifications,
+        Page::Wifi,
+        Page::Bluetooth,
+        Page::Record,
+    ] {
         let offset = page.index() - shown;
 
         // only pages at least partly in view are built

@@ -42,7 +42,12 @@ pub fn view(monitor: &Monitor, theme: &Theme, width: f32) -> Row {
         .cursor(Pointer)
         .on_click(|_| Overlay::toggle_power_menu())
         .align_child(Center, Center)
-        .child(Text::new(LOGO).size(28.0).font(fonts::NERD).color(theme.accent));
+        .child(
+            Text::new(LOGO)
+                .size(28.0)
+                .font(fonts::NERD)
+                .color(theme.accent),
+        );
 
     let name = Text::new(active_name(&own))
         .size(14.0)
@@ -59,7 +64,12 @@ pub fn view(monitor: &Monitor, theme: &Theme, width: f32) -> Row {
     }
 
     if settings.flag("bar_workspaces") {
-        items.push(Box::new(strip(monitor, &own, theme, settings.text("workspace_style"))));
+        items.push(Box::new(strip(
+            monitor,
+            &own,
+            theme,
+            settings.text("workspace_style"),
+        )));
     }
 
     if settings.flag("bar_workspace_name") {
@@ -103,7 +113,9 @@ fn strip(monitor: &Monitor, workspaces: &[&Workspace], theme: &Theme, style: &st
         .fill(theme.accent)
         .translate(offset, 0.0);
 
-    let active_index = workspaces.get(active).map_or(1, |workspace| workspace.index() as usize);
+    let active_index = workspaces
+        .get(active)
+        .map_or(1, |workspace| workspace.index() as usize);
 
     // the pill style spins a star in the highlight, numbers repeat the active one
     let highlight: Box<dyn Widget> = match style {
@@ -117,7 +129,10 @@ fn strip(monitor: &Monitor, workspaces: &[&Workspace], theme: &Theme, style: &st
     };
 
     // the highlight slides over the dots, which stay where they are
-    let layers = Stack::new(vec![Box::new(Row::new(slots).gap(SLOT_GAP).align(Center)), highlight]);
+    let layers = Stack::new(vec![
+        Box::new(Row::new(slots).gap(SLOT_GAP).align(Center)),
+        highlight,
+    ]);
 
     Rectangle::new()
         .width(content + STRIP_PADDING * 2.0)
@@ -143,7 +158,10 @@ fn slot(workspace: &Workspace, theme: &Theme, style: &str) -> Rectangle {
     let mark = if style == "numbers" {
         number(workspace.index() as usize, color)
     } else {
-        Text::new(INACTIVE).size(11.0).font(fonts::SYMBOLS).color(color)
+        Text::new(INACTIVE)
+            .size(11.0)
+            .font(fonts::SYMBOLS)
+            .color(color)
     };
 
     Rectangle::new()

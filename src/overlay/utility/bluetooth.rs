@@ -48,7 +48,11 @@ pub fn view(overlay: &Overlay, theme: &Theme, width: f32, height: f32) -> Column
         "Ready"
     };
 
-    let title = if powered { "Bluetooth" } else { "Bluetooth off" };
+    let title = if powered {
+        "Bluetooth"
+    } else {
+        "Bluetooth off"
+    };
 
     let header = Header {
         name: "bluetooth",
@@ -59,21 +63,35 @@ pub fn view(overlay: &Overlay, theme: &Theme, width: f32, height: f32) -> Column
         active: powered,
     };
 
-    let header = header::view(overlay, theme, header, width, move || Bluetooth::set_powered(!powered));
+    let header = header::view(overlay, theme, header, width, move || {
+        Bluetooth::set_powered(!powered)
+    });
 
     let list_height = height - header::HEIGHT - GAP;
 
     let mut parts: Vec<Box<dyn Widget>> = vec![Box::new(header)];
 
     if powered {
-        parts.push(Box::new(list(overlay, theme, &bluetooth, width, list_height)));
+        parts.push(Box::new(list(
+            overlay,
+            theme,
+            &bluetooth,
+            width,
+            list_height,
+        )));
     }
 
     Column::new(parts).gap(GAP)
 }
 
 // paired devices first, then the ones a scan found
-fn list(overlay: &Overlay, theme: &Theme, bluetooth: &Bluetooth, width: f32, height: f32) -> Rectangle {
+fn list(
+    overlay: &Overlay,
+    theme: &Theme,
+    bluetooth: &Bluetooth,
+    width: f32,
+    height: f32,
+) -> Rectangle {
     let area = Rectangle::new().width(width).height(height);
 
     if bluetooth.devices().is_empty() {
@@ -226,7 +244,12 @@ fn card(overlay: &Overlay, theme: &Theme, device: &BluetoothDevice, width: f32) 
 
     // over the click area, so forgetting doesn't also connect
     if paired {
-        layers.push(Box::new(forget_button(overlay, theme, device.path(), width)));
+        layers.push(Box::new(forget_button(
+            overlay,
+            theme,
+            device.path(),
+            width,
+        )));
     }
 
     Stack::new(layers).width(width).height(CARD_HEIGHT)

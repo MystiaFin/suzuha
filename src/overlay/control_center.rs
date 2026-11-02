@@ -85,7 +85,11 @@ pub fn view(overlay: &Overlay, theme: &Theme, screen: Region) -> Option<PanelVie
 fn content(overlay: &Overlay, theme: &Theme, width: f32) -> Rectangle {
     let card_width = width - PADDING.left - PADDING.right - FADERS_WIDTH - GAP;
 
-    let row = Row::new(children![faders(theme), media::view(overlay, theme, card_width, INNER_HEIGHT)]).gap(GAP);
+    let row = Row::new(children![
+        faders(theme),
+        media::view(overlay, theme, card_width, INNER_HEIGHT)
+    ])
+    .gap(GAP);
 
     Rectangle::new()
         .width(width)

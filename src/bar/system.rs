@@ -74,13 +74,21 @@ fn indicator(value: f32, color: Color, icon: &str, text: &str, theme: &Theme) ->
         .width(RING_SIZE)
         .height(RING_SIZE)
         .align_child(Center, Center)
-        .child(Text::new(icon).size(10.0).font(fonts::MATERIAL).color(theme.text));
+        .child(
+            Text::new(icon)
+                .size(10.0)
+                .font(fonts::MATERIAL)
+                .color(theme.text),
+        );
 
     let ring_with_icon = Stack::new(children![ring, icon]);
 
-    Row::new(children![ring_with_icon, pill::label(text, 14.0, theme.text)])
-        .gap(6.0)
-        .align(Center)
+    Row::new(children![
+        ring_with_icon,
+        pill::label(text, 14.0, theme.text)
+    ])
+    .gap(6.0)
+    .align(Center)
 }
 
 // none on a desktop without a battery
@@ -156,7 +164,10 @@ fn tray(theme: &Theme) -> Rectangle {
     let mut icons: Vec<Box<dyn Widget>> = Vec::new();
 
     for icon in TRAY_ICONS {
-        let text = Text::new(icon).size(15.0).font(fonts::NERD).color(theme.on_accent);
+        let text = Text::new(icon)
+            .size(15.0)
+            .font(fonts::NERD)
+            .color(theme.on_accent);
 
         icons.push(Box::new(text));
     }
@@ -207,7 +218,10 @@ fn recording(theme: &Theme) -> (f32, Rectangle) {
 
         let extra = width.value();
 
-        let dot = Text::new(RECORDING_DOT).size(8.0).font(fonts::NERD).color(theme.on_accent);
+        let dot = Text::new(RECORDING_DOT)
+            .size(8.0)
+            .font(fonts::NERD)
+            .color(theme.on_accent);
 
         let segment = Rectangle::new()
             .width(extra)

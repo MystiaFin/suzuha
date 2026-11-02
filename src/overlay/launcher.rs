@@ -71,7 +71,9 @@ pub fn view(overlay: &Overlay, theme: &Theme, screen: Region) -> Option<PanelVie
 
     let entries = results::find(&overlay.query, &overlay.sessions);
 
-    let full_width = Settings::read().number("launcher_width").min(screen.width - 80.0);
+    let full_width = Settings::read()
+        .number("launcher_width")
+        .min(screen.width - 80.0);
     let width = full_width * (CLOSED_WIDTH + (1.0 - CLOSED_WIDTH) * progress);
 
     let rows = visible_rows(screen, entries.len()).max(1);
@@ -178,13 +180,7 @@ fn content(
 }
 
 // the rows that fit, with the selection highlight sliding behind them
-fn list(
-    overlay: &Overlay,
-    theme: &Theme,
-    entries: &[Entry],
-    width: f32,
-    height: f32,
-) -> Rectangle {
+fn list(overlay: &Overlay, theme: &Theme, entries: &[Entry], width: f32, height: f32) -> Rectangle {
     let area = Rectangle::new()
         .width(width)
         .height(height)
@@ -278,7 +274,11 @@ fn row(overlay: &Overlay, theme: &Theme, entry: &Entry, index: usize, width: f32
         .child(Column::new(labels).gap(2.0));
 
     let content: Box<dyn Widget> = if show_icon {
-        Box::new(Row::new(children![icon(entry, theme), name]).gap(12.0).align(Center))
+        Box::new(
+            Row::new(children![icon(entry, theme), name])
+                .gap(12.0)
+                .align(Center),
+        )
     } else {
         Box::new(name)
     };
@@ -313,7 +313,12 @@ fn icon(entry: &Entry, theme: &Theme) -> Rectangle {
         .align_child(Center, Center);
 
     if let Some(glyph) = entry.glyph {
-        return slot.child(Text::new(glyph).size(24.0).font(fonts::NERD).color(theme.text));
+        return slot.child(
+            Text::new(glyph)
+                .size(24.0)
+                .font(fonts::NERD)
+                .color(theme.text),
+        );
     }
 
     let Kind::App(index) = entry.kind else {
@@ -412,7 +417,9 @@ pub fn key_pressed(key: Key) {
         }
 
         // the first escape clears the search, the second closes
-        Key::Escape if !overlay.query.is_empty() && Settings::read().flag("launcher_escape_clears") => {
+        Key::Escape
+            if !overlay.query.is_empty() && Settings::read().flag("launcher_escape_clears") =>
+        {
             overlay.query.clear();
 
             TextInput::set_text(INPUT, "");

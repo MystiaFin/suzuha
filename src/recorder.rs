@@ -58,7 +58,6 @@ pub struct Recorder {
     modules: Vec<String>,
 
     pub audio: Audio,
-
 }
 
 impl Service for Recorder {
@@ -148,7 +147,10 @@ fn mix() -> Vec<String> {
     let mut modules = Vec::new();
 
     for arguments in loads {
-        let output = Command::new("pactl").arg("load-module").args(arguments).output();
+        let output = Command::new("pactl")
+            .arg("load-module")
+            .args(arguments)
+            .output();
 
         if let Ok(output) = output
             && output.status.success()

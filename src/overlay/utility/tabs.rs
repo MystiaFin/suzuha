@@ -76,7 +76,11 @@ fn button(overlay: &Overlay, theme: &Theme, tab: &Tab, index: usize) -> Rectangl
 
     // the group's two ends stay fully round
     let left = if index == 0 { HEIGHT / 2.0 } else { radius };
-    let right = if index == TABS.len() - 1 { HEIGHT / 2.0 } else { radius };
+    let right = if index == TABS.len() - 1 {
+        HEIGHT / 2.0
+    } else {
+        radius
+    };
 
     let fill = if active {
         theme.accent

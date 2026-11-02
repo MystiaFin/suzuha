@@ -2,8 +2,8 @@ mod center;
 mod motion;
 mod pill;
 mod reveal;
-mod star;
 mod ring;
+mod star;
 mod system;
 mod timer;
 mod workspaces;
@@ -62,7 +62,11 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     drop(settings);
 
     // how far the bar is out, always all the way unless it hides
-    let target = if !hides || Reveal::read().inside { 1.0 } else { 0.0 };
+    let target = if !hides || Reveal::read().inside {
+        1.0
+    } else {
+        0.0
+    };
 
     let shown = shell_motion::follow(&format!("bar:{}", monitor.name), target, DEFAULT_SPATIAL);
 
@@ -113,7 +117,11 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
     let space = if hides { Zone::Ignore } else { Zone::Reserve };
 
     // a hiding bar leaves no black strip behind
-    let behind = if hides { Color::TRANSPARENT } else { Color::BLACK };
+    let behind = if hides {
+        Color::TRANSPARENT
+    } else {
+        Color::BLACK
+    };
 
     // black behind the rounded corners, so the screen's corners look rounded too
     LayerWindow::new()
@@ -130,6 +138,12 @@ pub fn view(monitor: &Monitor) -> LayerWindow {
                 .opacity(Curtain::read().items.value())
                 .clip()
                 .on_hover(reveal::hover)
-                .child(Rectangle::new().width(Parent).height(height).translate(0.0, slide).child(bar)),
+                .child(
+                    Rectangle::new()
+                        .width(Parent)
+                        .height(height)
+                        .translate(0.0, slide)
+                        .child(bar),
+                ),
         )
 }

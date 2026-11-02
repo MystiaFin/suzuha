@@ -165,7 +165,12 @@ fn button(index: usize, action: &Action, fill: f32, last: bool, theme: &Theme) -
         .width(28.0)
         .height(BUTTON_HEIGHT)
         .align_child(Center, Center)
-        .child(Text::new(action.icon).size(20.0).font(fonts::NERD).color(icon_color));
+        .child(
+            Text::new(action.icon)
+                .size(20.0)
+                .font(fonts::NERD)
+                .color(icon_color),
+        );
 
     let label = Text::new(action.label)
         .size(14.0)

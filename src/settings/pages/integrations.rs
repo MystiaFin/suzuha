@@ -65,7 +65,11 @@ pub fn build(page: &mut Page) {
                 return;
             }
 
-            Shown::write().confirm = Some(Confirm::Integration { key, title, warning });
+            Shown::write().confirm = Some(Confirm::Integration {
+                key,
+                title,
+                warning,
+            });
         });
     }
 

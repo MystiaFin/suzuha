@@ -199,12 +199,18 @@ impl Overlay {
 
     // only the popup goes, the notification stays in the list
     pub fn close_popup(id: u32) {
-        let listed: Vec<u32> = Notifications::read().list().iter().map(Notification::id).collect();
+        let listed: Vec<u32> = Notifications::read()
+            .list()
+            .iter()
+            .map(Notification::id)
+            .collect();
 
         let mut overlay = Self::write();
 
         // ids of notifications already gone are dropped, so the list stays short
-        overlay.closed_popups.retain(|closed| listed.contains(closed));
+        overlay
+            .closed_popups
+            .retain(|closed| listed.contains(closed));
 
         overlay.closed_popups.push(id);
     }

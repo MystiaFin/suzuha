@@ -31,7 +31,11 @@ pub fn build(page: &mut Page) {
         "scheme",
         "Color scheme",
         "Choose the palette family used by the shell",
-        &[("Dynamic", "dynamic"), ("Gruvbox", "gruvbox"), ("Catppuccin", "catppuccin")],
+        &[
+            ("Dynamic", "dynamic"),
+            ("Gruvbox", "gruvbox"),
+            ("Catppuccin", "catppuccin"),
+        ],
     );
 
     choice::add(
@@ -155,5 +159,9 @@ fn preview(page: &Page) -> Rectangle {
             left: 20.0,
         })
         .align_child(Start, Center)
-        .child(Row::new(children![labels, Row::new(swatches).gap(SWATCH_GAP)]).gap(12.0).align(Center))
+        .child(
+            Row::new(children![labels, Row::new(swatches).gap(SWATCH_GAP)])
+                .gap(12.0)
+                .align(Center),
+        )
 }

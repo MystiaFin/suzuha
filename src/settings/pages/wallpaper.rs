@@ -15,7 +15,11 @@ pub fn build(page: &mut Page) {
         "wallpaper_transition",
         "Transition",
         "Choose how the new wallpaper replaces the current one",
-        &[("Circle", "circle"), ("Fade", "fade"), ("Instant", "instant")],
+        &[
+            ("Circle", "circle"),
+            ("Fade", "fade"),
+            ("Instant", "instant"),
+        ],
     );
 
     slider::add(

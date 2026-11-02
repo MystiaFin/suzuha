@@ -40,7 +40,8 @@ pub const PLAY_ICON: &str = "\u{f040a}";
 pub const PAUSE_ICON: &str = "\u{f03e4}";
 const RESET_ICON: &str = "\u{f0453}";
 
-const SOUND: &str = "/run/current-system/sw/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga";
+const SOUND: &str =
+    "/run/current-system/sw/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga";
 
 #[derive(Clone, Copy, PartialEq)]
 enum Mode {
@@ -253,7 +254,13 @@ fn header(theme: &Theme, width: f32) -> Row {
         .radius(12.0)
         .fill(theme.selected_surface)
         .align_child(Center, Center)
-        .child(Text::new(TIMER_ICON).size(21.0).font(fonts::NERD).tight().color(theme.accent));
+        .child(
+            Text::new(TIMER_ICON)
+                .size(21.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.accent),
+        );
 
     let title = Text::new("Pomodoro")
         .size(21.0)
@@ -276,13 +283,22 @@ fn header(theme: &Theme, width: f32) -> Row {
         .on_hover(|inside| hover(String::from("close"), inside))
         .on_click(|_| close())
         .align_child(Center, Center)
-        .child(Text::new(CLOSE_ICON).size(18.0).font(fonts::NERD).tight().color(theme.secondary_text));
+        .child(
+            Text::new(CLOSE_ICON)
+                .size(18.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.secondary_text),
+        );
 
-    Row::new(children![Row::new(children![icon, title]).gap(12.0).align(Center), close])
-        .width(width)
-        .height(40.0)
-        .justify(SpaceBetween)
-        .align(Center)
+    Row::new(children![
+        Row::new(children![icon, title]).gap(12.0).align(Center),
+        close
+    ])
+    .width(width)
+    .height(40.0)
+    .justify(SpaceBetween)
+    .align(Center)
 }
 
 /*
@@ -320,7 +336,11 @@ fn mode_chip(theme: &Theme, index: usize, mode: Mode, chosen: bool) -> Rectangle
     let inner = morph(index, if chosen { pill } else { CHIP_INNER_RADIUS });
 
     let left = if index == 0 { pill } else { inner };
-    let right = if index == MODES.len() - 1 { pill } else { inner };
+    let right = if index == MODES.len() - 1 {
+        pill
+    } else {
+        inner
+    };
 
     Rectangle::new()
         .width(label.len() as f32 * 8.0 + 36.0)
@@ -334,7 +354,13 @@ fn mode_chip(theme: &Theme, index: usize, mode: Mode, chosen: bool) -> Rectangle
         .on_hover(move |inside| hover(hover_name.clone(), inside))
         .on_click(move |_| Timer::write().choose(mode))
         .align_child(Center, Center)
-        .child(Text::new(label).size(13.0).font(fonts::BODY).weight(Weight::SemiBold).color(text))
+        .child(
+            Text::new(label)
+                .size(13.0)
+                .font(fonts::BODY)
+                .weight(Weight::SemiBold)
+                .color(text),
+        )
 }
 
 pub fn running() -> bool {
@@ -376,8 +402,17 @@ fn dial(theme: &Theme, size: f32) -> Stack {
     drop(timer);
 
     let readout = Column::new(children![
-        Text::new(left).size(size * 0.24).font(fonts::BODY).weight(Weight::Bold).tight().color(theme.text),
-        Text::new(state).size(14.0).font(fonts::BODY).weight(Weight::SemiBold).color(theme.accent),
+        Text::new(left)
+            .size(size * 0.24)
+            .font(fonts::BODY)
+            .weight(Weight::Bold)
+            .tight()
+            .color(theme.text),
+        Text::new(state)
+            .size(14.0)
+            .font(fonts::BODY)
+            .weight(Weight::SemiBold)
+            .color(theme.accent),
     ])
     .gap(8.0)
     .align(Center);
@@ -388,9 +423,12 @@ fn dial(theme: &Theme, size: f32) -> Stack {
         .align_child(Center, Center)
         .child(readout);
 
-    Stack::new(children![ring::view(size, gone, running, theme.accent, theme.selected_surface), middle])
-        .width(size)
-        .height(size)
+    Stack::new(children![
+        ring::view(size, gone, running, theme.accent, theme.selected_surface),
+        middle
+    ])
+    .width(size)
+    .height(size)
 }
 
 // reset beside a big play button that squares off while running
@@ -418,7 +456,13 @@ fn controls(theme: &Theme) -> Row {
         .on_hover(|inside| hover(String::from("play"), inside))
         .on_click(|_| toggle())
         .align_child(Center, Center)
-        .child(Text::new(icon).size(30.0).font(fonts::NERD).tight().color(theme.on_accent));
+        .child(
+            Text::new(icon)
+                .size(30.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.on_accent),
+        );
 
     let reset_fill = if hovered("reset") {
         theme::mix(theme.selected_surface, theme.text, 0.08)
@@ -435,7 +479,13 @@ fn controls(theme: &Theme) -> Row {
         .on_hover(|inside| hover(String::from("reset"), inside))
         .on_click(|_| reset())
         .align_child(Center, Center)
-        .child(Text::new(RESET_ICON).size(24.0).font(fonts::NERD).tight().color(theme.text));
+        .child(
+            Text::new(RESET_ICON)
+                .size(24.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.text),
+        );
 
     Row::new(children![reset, play]).gap(12.0).align(Center)
 }

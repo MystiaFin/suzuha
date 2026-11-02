@@ -1,7 +1,6 @@
 use amane::{
     Brightness, Center, Color, End, Point, Pointer, Rectangle, Row, Service, Stack, Start, Text,
-    Weight,
-    children,
+    Weight, children,
 };
 
 use super::{fade_target, hover};
@@ -38,9 +37,12 @@ const BRIGHTNESS_ICON: &str = "󰃠";
 pub fn view(overlay: &Overlay, theme: &Theme, width: f32) -> Row {
     let slider_width = width - MODE_WIDTH - GAP;
 
-    Row::new(children![mode_button(overlay, theme), slider(theme, slider_width)])
-        .gap(GAP)
-        .align(Center)
+    Row::new(children![
+        mode_button(overlay, theme),
+        slider(theme, slider_width)
+    ])
+    .gap(GAP)
+    .align(Center)
 }
 
 /*
@@ -52,7 +54,11 @@ fn mode_button(overlay: &Overlay, theme: &Theme) -> Rectangle {
 
     let amount = motion::fade(&hover_name, fade_target(overlay, &hover_name));
 
-    let light = motion::follow("mode:light", if theme.light { 1.0 } else { 0.0 }, DEFAULT_SPATIAL);
+    let light = motion::follow(
+        "mode:light",
+        if theme.light { 1.0 } else { 0.0 },
+        DEFAULT_SPATIAL,
+    );
 
     let fill = theme::mix(theme.selected_surface, theme.accent, amount);
     let icon_color = theme::mix(theme.accent, theme.on_accent, amount);
@@ -70,7 +76,11 @@ fn mode_button(overlay: &Overlay, theme: &Theme) -> Rectangle {
         .cursor(Pointer)
         .on_hover(move |inside| hover(hover_name.clone(), inside))
         .on_click(move |_| Mode::toggle(showing_light))
-        .child(Stack::new(children![moon, sun]).width(MODE_WIDTH).height(MODE_HEIGHT))
+        .child(
+            Stack::new(children![moon, sun])
+                .width(MODE_WIDTH)
+                .height(MODE_HEIGHT),
+        )
 }
 
 // fully there at 1, and at 0 small, faded and turned away by the given degrees
@@ -127,7 +137,11 @@ fn slider(theme: &Theme, width: f32) -> Stack {
         .height(HEIGHT)
         .translate(TRACK_LEFT, 0.0)
         .align_child(Start, Center)
-        .child(Stack::new(children![track, thumb]).width(track_width).height(TRACK_HEIGHT));
+        .child(
+            Stack::new(children![track, thumb])
+                .width(track_width)
+                .height(TRACK_HEIGHT),
+        );
 
     let icon = Rectangle::new()
         .width(TRACK_LEFT)

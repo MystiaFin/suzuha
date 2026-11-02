@@ -43,7 +43,14 @@ pub fn view(overlay: &Overlay, theme: &Theme, width: f32, height: f32) -> Column
     let mut cards: Vec<Box<dyn Widget>> = Vec::new();
 
     for audio in AUDIO {
-        cards.push(Box::new(card(overlay, theme, audio, audio == chosen, locked, width)));
+        cards.push(Box::new(card(
+            overlay,
+            theme,
+            audio,
+            audio == chosen,
+            locked,
+            width,
+        )));
     }
 
     let count = AUDIO.len() as f32;
@@ -58,14 +65,23 @@ pub fn view(overlay: &Overlay, theme: &Theme, width: f32, height: f32) -> Column
         .height((height - header::HEIGHT - BUTTON_HEIGHT - GAP * 2.0).max(0.0))
         .child(ScrollArea::new(LIST, column));
 
-    Column::new(children![title, area, button(overlay, theme, status, width)]).gap(GAP)
+    Column::new(children![
+        title,
+        area,
+        button(overlay, theme, status, width)
+    ])
+    .gap(GAP)
 }
 
 // header.rs's look, without its switch since the button below starts and stops
 fn title(theme: &Theme, status: Option<&str>, width: f32) -> Rectangle {
     let (icon_fill, text, color) = match status {
         Some(time) => (theme.danger, format!("Recording · {time}"), theme.danger),
-        None => (theme.accent, String::from("Ready · saves to ~/Videos"), theme.muted_text),
+        None => (
+            theme.accent,
+            String::from("Ready · saves to ~/Videos"),
+            theme.muted_text,
+        ),
     };
 
     let icon = Rectangle::new()
@@ -74,7 +90,13 @@ fn title(theme: &Theme, status: Option<&str>, width: f32) -> Rectangle {
         .radius(12.0)
         .fill(icon_fill)
         .align_child(Center, Center)
-        .child(Text::new(RECORD_ICON).size(18.0).font(fonts::NERD).tight().color(theme.on_accent));
+        .child(
+            Text::new(RECORD_ICON)
+                .size(18.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.on_accent),
+        );
 
     let text_width = width - HEADER_PADDING * 3.0 - HEADER_ICON_SIZE;
 
@@ -84,10 +106,13 @@ fn title(theme: &Theme, status: Option<&str>, width: f32) -> Rectangle {
         .weight(Weight::SemiBold)
         .color(theme.text);
 
-    let status = Rectangle::new()
-        .width(text_width)
-        .height(16.0)
-        .child(Text::new(text).size(10.0).font(fonts::BODY).color(color).elide());
+    let status = Rectangle::new().width(text_width).height(16.0).child(
+        Text::new(text)
+            .size(10.0)
+            .font(fonts::BODY)
+            .color(color)
+            .elide(),
+    );
 
     let text = Rectangle::new()
         .width(text_width)
@@ -106,11 +131,22 @@ fn title(theme: &Theme, status: Option<&str>, width: f32) -> Rectangle {
             bottom: HEADER_PADDING,
             left: HEADER_PADDING,
         })
-        .child(Row::new(children![icon, text]).gap(HEADER_PADDING).align(Center))
+        .child(
+            Row::new(children![icon, text])
+                .gap(HEADER_PADDING)
+                .align(Center),
+        )
 }
 
 // one sound mode, tinted with a check when chosen
-fn card(overlay: &Overlay, theme: &Theme, audio: Audio, selected: bool, locked: bool, width: f32) -> Rectangle {
+fn card(
+    overlay: &Overlay,
+    theme: &Theme,
+    audio: Audio,
+    selected: bool,
+    locked: bool,
+    width: f32,
+) -> Rectangle {
     let hover_name = format!("record:audio:{}", audio.label());
 
     let fill = if selected {
@@ -127,9 +163,19 @@ fn card(overlay: &Overlay, theme: &Theme, audio: Audio, selected: bool, locked: 
         .radius(8.0)
         .fill(theme.selected_surface)
         .align_child(Center, Center)
-        .child(Text::new(audio.icon()).size(16.0).font(fonts::NERD).tight().color(theme.accent));
+        .child(
+            Text::new(audio.icon())
+                .size(16.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.accent),
+        );
 
-    let weight = if selected { Weight::SemiBold } else { Weight::Regular };
+    let weight = if selected {
+        Weight::SemiBold
+    } else {
+        Weight::Regular
+    };
 
     let text_width = width - CARD_PADDING * 4.0 - ICON_SIZE - 16.0;
 
@@ -137,11 +183,21 @@ fn card(overlay: &Overlay, theme: &Theme, audio: Audio, selected: bool, locked: 
         .width(text_width)
         .height(ICON_SIZE)
         .align_child(Start, Center)
-        .child(Text::new(audio.label()).size(12.0).font(fonts::BODY).weight(weight).color(theme.text));
+        .child(
+            Text::new(audio.label())
+                .size(12.0)
+                .font(fonts::BODY)
+                .weight(weight)
+                .color(theme.text),
+        );
 
     let check = if selected { CHECK } else { "" };
 
-    let check = Text::new(check).size(14.0).font(fonts::NERD).tight().color(theme.accent);
+    let check = Text::new(check)
+        .size(14.0)
+        .font(fonts::NERD)
+        .tight()
+        .color(theme.accent);
 
     let card = Rectangle::new()
         .width(width)
@@ -154,7 +210,11 @@ fn card(overlay: &Overlay, theme: &Theme, audio: Audio, selected: bool, locked: 
             bottom: CARD_PADDING,
             left: CARD_PADDING,
         })
-        .child(Row::new(children![icon, name, check]).gap(CARD_PADDING).align(Center));
+        .child(
+            Row::new(children![icon, name, check])
+                .gap(CARD_PADDING)
+                .align(Center),
+        );
 
     // the other modes fade back while recording
     if locked {
@@ -182,7 +242,11 @@ fn button(overlay: &Overlay, theme: &Theme, status: Option<String>, width: f32) 
     };
 
     let content = Row::new(children![
-        Text::new(icon).size(16.0).font(fonts::NERD).tight().color(theme.on_accent),
+        Text::new(icon)
+            .size(16.0)
+            .font(fonts::NERD)
+            .tight()
+            .color(theme.on_accent),
         Text::new(label)
             .size(13.0)
             .font(fonts::BODY)

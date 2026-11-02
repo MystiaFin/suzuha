@@ -90,8 +90,18 @@ pub enum Page {
 
 // every page in the list's order, with its icon, label and the line under its title
 const PAGES: [(Page, &str, &str, &str); 11] = [
-    (Page::User, "󰀄", "User info", "Choose the name and profile picture shown on the lock screen."),
-    (Page::Appearance, "󰍹", "Appearance", "Tune the shell's surfaces and blur."),
+    (
+        Page::User,
+        "󰀄",
+        "User info",
+        "Choose the name and profile picture shown on the lock screen.",
+    ),
+    (
+        Page::Appearance,
+        "󰍹",
+        "Appearance",
+        "Tune the shell's surfaces and blur.",
+    ),
     (
         Page::Colors,
         "󰏘",
@@ -140,7 +150,12 @@ const PAGES: [(Page, &str, &str, &str); 11] = [
         "Integrations",
         "Keep supported applications in sync with the current shell palette.",
     ),
-    (Page::About, "󰋼", "About", "Inspect the running setup or reset settings."),
+    (
+        Page::About,
+        "󰋼",
+        "About",
+        "Inspect the running setup or reset settings.",
+    ),
 ];
 
 // something risky waiting for a yes before it is staged
@@ -209,7 +224,10 @@ pub fn view() -> Window {
     let shown = Shown::read();
 
     let page = shown.page;
-    let confirm = shown.confirm.as_ref().map(|confirm| dialog::view(&theme, confirm));
+    let confirm = shown
+        .confirm
+        .as_ref()
+        .map(|confirm| dialog::view(&theme, confirm));
 
     drop(shown);
 
@@ -246,7 +264,13 @@ fn header(theme: &Theme, width: f32) -> Row {
         .radius(12.0)
         .fill(theme.selected_surface)
         .align_child(Center, Center)
-        .child(Text::new(SETTINGS_ICON).size(21.0).font(fonts::NERD).tight().color(theme.accent));
+        .child(
+            Text::new(SETTINGS_ICON)
+                .size(21.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.accent),
+        );
 
     let title = Text::new("Settings")
         .size(21.0)
@@ -277,11 +301,14 @@ fn header(theme: &Theme, width: f32) -> Row {
                 .color(theme.secondary_text),
         );
 
-    Row::new(children![Row::new(children![icon, title]).gap(12.0).align(Center), close])
-        .width(width - MARGIN * 2.0)
-        .height(HEADER_HEIGHT)
-        .justify(SpaceBetween)
-        .align(Center)
+    Row::new(children![
+        Row::new(children![icon, title]).gap(12.0).align(Center),
+        close
+    ])
+    .width(width - MARGIN * 2.0)
+    .height(HEADER_HEIGHT)
+    .justify(SpaceBetween)
+    .align(Center)
 }
 
 // the page's title and line, its groups, and apply at the bottom
@@ -329,7 +356,12 @@ fn content(theme: &Theme, shown: Page, layout: &Layout) -> Column {
         .height(layout.scroll_height + FOOTER_GAP)
         .child(scroll);
 
-    Column::new(children![section, scroll, footer(theme, layout.content_width)]).gap(SECTION_GAP)
+    Column::new(children![
+        section,
+        scroll,
+        footer(theme, layout.content_width)
+    ])
+    .gap(SECTION_GAP)
 }
 
 // "unsaved changes" beside apply, which is faded while there is nothing to apply

@@ -26,8 +26,14 @@ pub fn export(folder: &str, name: &str, theme: &Theme) {
 
     for (names, outline) in GLYPHS {
         for icon in names {
-            write(&format!("{folder}/{GLYPH_FOLDER}/{icon}.svg"), &glyph(outline, &plain));
-            write(&format!("{folder}/{GLYPH_FOLDER}/{icon}-symbolic.svg"), &glyph(outline, "#bebebe"));
+            write(
+                &format!("{folder}/{GLYPH_FOLDER}/{icon}.svg"),
+                &glyph(outline, &plain),
+            );
+            write(
+                &format!("{folder}/{GLYPH_FOLDER}/{icon}-symbolic.svg"),
+                &glyph(outline, "#bebebe"),
+            );
         }
     }
 
@@ -35,9 +41,16 @@ pub fn export(folder: &str, name: &str, theme: &Theme) {
         folders.extend(tint_folders(&papirus, folder, theme));
     }
 
-    let inherits = if theme.light { "Papirus" } else { "Papirus-Dark" };
+    let inherits = if theme.light {
+        "Papirus"
+    } else {
+        "Papirus-Dark"
+    };
 
-    write(&format!("{folder}/index.theme"), &index(name, inherits, &folders));
+    write(
+        &format!("{folder}/index.theme"),
+        &index(name, inherits, &folders),
+    );
 }
 
 fn glyph(outline: &str, fill: &str) -> String {
@@ -82,7 +95,11 @@ fn papirus() -> Option<PathBuf> {
 
     data_dirs
         .split(':')
-        .chain([profile.as_str(), "/run/current-system/sw/share", "/usr/share"])
+        .chain([
+            profile.as_str(),
+            "/run/current-system/sw/share",
+            "/usr/share",
+        ])
         .map(|data| Path::new(data).join("icons/Papirus"))
         .find(|papirus| papirus.join("index.theme").exists())
 }
@@ -167,10 +184,15 @@ fn index(name: &str, inherits: &str, folders: &[Folder]) -> String {
     );
 
     for folder in folders {
-        text.push_str(&format!("\n[{}]\nSize={}\nContext=Places\n", folder.path, folder.size));
+        text.push_str(&format!(
+            "\n[{}]\nSize={}\nContext=Places\n",
+            folder.path, folder.size
+        ));
 
         match folder.range {
-            Some((min, max)) => text.push_str(&format!("Type=Scalable\nMinSize={min}\nMaxSize={max}\n")),
+            Some((min, max)) => {
+                text.push_str(&format!("Type=Scalable\nMinSize={min}\nMaxSize={max}\n"))
+            }
             None => text.push_str("Type=Fixed\n"),
         }
     }

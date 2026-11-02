@@ -33,7 +33,13 @@ pub fn view(fader: Fader, theme: &Theme, height: f32) -> Rectangle {
         .align_child(Center, Center)
         .cursor(Pointer)
         .on_click(move |_| (fader.toggle_mute)())
-        .child(Text::new(fader.icon).size(19.0).font(fonts::NERD).tight().color(theme.text));
+        .child(
+            Text::new(fader.icon)
+                .size(19.0)
+                .font(fonts::NERD)
+                .tight()
+                .color(theme.text),
+        );
 
     let label = Rectangle::new()
         .width(WIDTH)

@@ -140,9 +140,16 @@ fn fetch(request: &Request) -> Weather {
         };
     };
 
-    let coordinates = format!("latitude={}&longitude={}", location.latitude, location.longitude);
+    let coordinates = format!(
+        "latitude={}&longitude={}",
+        location.latitude, location.longitude
+    );
 
-    let unit = if request.fahrenheit { "fahrenheit" } else { "celsius" };
+    let unit = if request.fahrenheit {
+        "fahrenheit"
+    } else {
+        "celsius"
+    };
 
     let forecast = get(&format!(
         "{FORECAST}?{coordinates}&current=temperature_2m,relative_humidity_2m,weather_code,uv_index\
@@ -150,7 +157,9 @@ fn fetch(request: &Request) -> Weather {
          &forecast_days=1&timezone=auto&format=csv"
     ));
 
-    let air = get(&format!("{AIR_QUALITY}?{coordinates}&current=us_aqi&format=csv"));
+    let air = get(&format!(
+        "{AIR_QUALITY}?{coordinates}&current=us_aqi&format=csv"
+    ));
 
     let number = |values: &HashMap<String, String>, name: &str| values.get(name)?.parse().ok();
 
@@ -159,7 +168,9 @@ fn fetch(request: &Request) -> Weather {
         temperature: number(&forecast, "temperature_2m"),
         high: number(&forecast, "temperature_2m_max"),
         low: number(&forecast, "temperature_2m_min"),
-        code: forecast.get("weather_code").and_then(|code| code.parse().ok()),
+        code: forecast
+            .get("weather_code")
+            .and_then(|code| code.parse().ok()),
         humidity: number(&forecast, "relative_humidity_2m"),
         uv_index: number(&forecast, "uv_index"),
         air_quality: number(&air, "us_aqi"),

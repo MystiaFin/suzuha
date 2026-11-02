@@ -39,7 +39,10 @@ fn run() {
 
             let task = queue.task;
 
-            let waiting = queue.files.iter_mut().find(|file| file.status == Status::Waiting);
+            let waiting = queue
+                .files
+                .iter_mut()
+                .find(|file| file.status == Status::Waiting);
 
             match waiting {
                 Some(file) => {
@@ -104,7 +107,17 @@ fn ffmpeg(input: &Path, arguments: &[&str], output: &Path) -> Status {
 
     // arguments are passed straight to ffmpeg, so file names need no quoting
     let child = Command::new("ffmpeg")
-        .args(["-hide_banner", "-loglevel", "error", "-nostdin", "-nostats", "-progress", "pipe:1", "-n", "-i"])
+        .args([
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-nostdin",
+            "-nostats",
+            "-progress",
+            "pipe:1",
+            "-n",
+            "-i",
+        ])
         .arg(input)
         .args(arguments)
         .arg(output)
@@ -152,13 +165,23 @@ fn ffmpeg(input: &Path, arguments: &[&str], output: &Path) -> Status {
 // in seconds, none for a still image or anything ffprobe can't time
 fn duration(input: &Path) -> Option<f32> {
     let probed = Command::new("ffprobe")
-        .args(["-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1"])
+        .args([
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+        ])
         .arg(input)
         .stderr(Stdio::null())
         .output()
         .ok()?;
 
-    let seconds: f32 = String::from_utf8_lossy(&probed.stdout).trim().parse().ok()?;
+    let seconds: f32 = String::from_utf8_lossy(&probed.stdout)
+        .trim()
+        .parse()
+        .ok()?;
 
     // a still image reports a single frame's length
     if seconds < 0.5 {
@@ -209,10 +232,15 @@ fn soffice(input: &Path, document: &Document, scratch: &Path) -> Status {
     let mut command = Command::new("soffice");
 
     command
-        .arg(format!("-env:UserInstallation=file://{}", profile.display()))
+        .arg(format!(
+            "-env:UserInstallation=file://{}",
+            profile.display()
+        ))
         .args(["--headless", "--norestore"]);
 
-    let from_pdf = input.extension().is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"));
+    let from_pdf = input
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("pdf"));
 
     // a pdf opens as a drawing unless writer is told to read it as text
     if from_pdf && document.kind == Kind::Text {
@@ -239,7 +267,10 @@ fn soffice(input: &Path, document: &Document, scratch: &Path) -> Status {
 
     while child.try_wait().is_ok_and(|exited| exited.is_none()) {
         if Instant::now() > deadline {
-            let _ = Command::new("kill").arg("-KILL").arg(format!("-{}", child.id())).status();
+            let _ = Command::new("kill")
+                .arg("-KILL")
+                .arg(format!("-{}", child.id()))
+                .status();
 
             let _ = child.wait();
 
