@@ -9,6 +9,7 @@ use amane::{
 
 use super::state::LIST_DURATION;
 use super::{Overlay, PanelView, Region};
+use crate::app_icon;
 use crate::fonts;
 use crate::liquid::{self, Blob};
 use crate::motion::{self, Spring};
@@ -327,18 +328,9 @@ fn icon(entry: &Entry, theme: &Theme) -> Rectangle {
 
     let apps = Apps::read();
 
-    let Some(path) = apps.list()[index].icon_path() else {
+    let Some(path) = app_icon::path(&apps.list()[index]) else {
         return slot;
     };
-
-    let readable = matches!(
-        path.extension().and_then(|extension| extension.to_str()),
-        Some("png" | "jpg" | "jpeg" | "svg")
-    );
-
-    if !readable {
-        return slot;
-    }
 
     // twice the size, so it stays sharp on a scaled screen
     let pixels = (ICON_SIZE * 2.0) as u32;
@@ -562,6 +554,12 @@ fn launch_selected() {
             overlay.launcher.hide();
 
             crate::pomodoro::open();
+        }
+
+        Kind::Mixer => {
+            overlay.launcher.hide();
+
+            crate::mixer::open();
         }
 
         Kind::TmuxCommand => search_tmux(&mut overlay),

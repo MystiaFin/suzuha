@@ -33,6 +33,7 @@ suzuha is my personal amane configuration: a full desktop shell in Rust rather t
 - Wallpaper-derived dynamic color palette, plus fixed Gruvbox and Catppuccin schemes
 - Floating desktop widgets that place themselves around the wallpaper
 - Pomodoro timer
+- Per-app volume mixer
 - File converter for images, video, audio, and documents
 - Power menu
 - logind-driven Wayland lock screen
@@ -116,6 +117,7 @@ amane ipc call wallpaper toggle    # also show, hide
 amane ipc call settings
 amane ipc call record              # start or stop a screen recording
 amane ipc call converter
+amane ipc call mixer
 amane ipc call lock
 ```
 
@@ -173,15 +175,17 @@ The name and profile picture shown on the lock screen can be changed under **Set
 > [!CAUTION]
 > A Wayland session lock deliberately stays locked if the locker dies. If amane crashes while the session is locked, the compositor will not reveal the desktop; recover from another TTY if necessary.
 
-## Pomodoro & converter
+## Pomodoro, converter & mixer
 
-Two small tools that live inside the shell instead of being separate apps:
+Small tools that live inside the shell instead of being separate apps:
 
 - **Pomodoro** — a focus timer with a wavy progress ring, also shown as a pill on the bar
 - **Converter** — converts and compresses images, video, audio, and documents through `ffmpeg`, ImageMagick, and LibreOffice
+- **Mixer** — the speaker volume plus a slider and mute button for every app playing sound
 
 ```sh
 amane ipc call converter
+amane ipc call mixer
 ```
 
 ## Settings

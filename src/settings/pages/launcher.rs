@@ -94,6 +94,12 @@ pub fn build(page: &mut Page) {
         "Pomodoro command",
         "Show Pomodoro in command mode",
     );
+    switch::add(
+        page,
+        "command_mixer",
+        "Mixer command",
+        "Show Mixer in command mode",
+    );
 
     page.end_group();
 }

@@ -1,3 +1,4 @@
+mod app_icon;
 mod bar;
 mod clock;
 mod converter;
@@ -7,6 +8,7 @@ mod fonts;
 mod integrations;
 mod liquid;
 mod lock_screen;
+mod mixer;
 mod motion;
 mod overlay;
 mod pomodoro;
@@ -66,6 +68,7 @@ fn main() {
         .ipc("lock", lock_screen::ipc)
         .ipc("wallpaper", wallpaper::picker::ipc)
         .ipc("converter", converter::ipc)
+        .ipc("mixer", mixer::ipc)
         .ipc("record", recorder::ipc)
         .run();
 }

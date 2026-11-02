@@ -25,6 +25,9 @@ pub enum Kind {
     // opens the pomodoro timer
     Pomodoro,
 
+    // opens the per-app volume mixer
+    Mixer,
+
     // switches the search to tmux sessions
     TmuxCommand,
 
@@ -124,6 +127,12 @@ fn commands(search: &str) -> Vec<Entry> {
             Kind::Converter,
         ),
         ("Pomodoro", "\u{f13ab}", "command_pomodoro", Kind::Pomodoro),
+        (
+            "Mixer",
+            crate::mixer::MIXER_ICON,
+            "command_mixer",
+            Kind::Mixer,
+        ),
     ];
 
     let settings = Settings::read();
